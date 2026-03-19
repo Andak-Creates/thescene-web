@@ -22,7 +22,7 @@ const Testimonials = () => {
 
   return (
     <Section id="testimonials" className="bg-theme-surface">
-      <div className="text-center mb-16">
+      <div data-aos="fade-up" className="text-center mb-16">
         <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">
           What Our <span className="text-theme-purple">Users Say</span>
         </h2>
@@ -33,7 +33,7 @@ const Testimonials = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {testimonials.map((testimonial, index) => (
-          <div key={index} className="bg-theme-bg border border-theme-border p-8 rounded-2xl hover:border-theme-purple/30 transition-all duration-300">
+          <div key={index} data-aos="fade-up" data-aos-delay={index * 150} className="bg-theme-bg border border-theme-border p-8 rounded-2xl hover:border-theme-purple/30 transition-all duration-300">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 bg-theme-purple rounded-full flex items-center justify-center text-white font-bold text-lg">
                 {testimonial.initials}

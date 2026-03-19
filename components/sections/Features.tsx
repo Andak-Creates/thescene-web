@@ -63,7 +63,7 @@ const Features = () => {
 
   return (
     <Section id="features" className="bg-theme-bg">
-      <div className="text-center mb-16">
+      <div data-aos="fade-up" className="text-center mb-16">
         <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">
           Everything You Need to <span className="text-theme-purple">Party Better</span>
         </h2>
@@ -74,12 +74,13 @@ const Features = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {features.map((feature, index) => (
-          <FeatureCard 
-            key={index}
-            title={feature.title}
-            description={feature.description}
-            icon={feature.icon}
-          />
+          <div key={index} data-aos="fade-up" data-aos-delay={index * 100}>
+            <FeatureCard 
+              title={feature.title}
+              description={feature.description}
+              icon={feature.icon}
+            />
+          </div>
         ))}
       </div>
     </Section>

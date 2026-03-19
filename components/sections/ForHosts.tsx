@@ -6,7 +6,7 @@ const ForHosts = () => {
   return (
     <Section id="for-hosts" className="bg-theme-bg overflow-hidden">
       <div className="flex flex-col lg:flex-row items-center gap-16">
-        <div className="flex-1">
+        <div data-aos="fade-right" className="flex-1">
           <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6 leading-tight">
             Take Your Events to <br /> <span className="text-theme-purple">The Next Level</span>
           </h2>
@@ -37,7 +37,7 @@ const ForHosts = () => {
           </Button>
         </div>
         
-        <div className="flex-1 relative">
+        <div data-aos="fade-left" data-aos-delay="200" className="flex-1 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-theme-purple/20 rounded-full blur-[80px]"></div>
           <div className="relative bg-theme-surface border border-theme-border p-10 rounded-3xl shadow-2xl overflow-hidden group">
             <h3 className="text-2xl font-heading font-bold text-white mb-6">Host Dashboard Preview</h3>

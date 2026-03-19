@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
+import { AOSInit } from "@/components/AOSInit";
 import "./globals.css";
 
 const syne = Syne({
@@ -23,10 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body
         className={`${syne.variable} ${dmSans.variable} font-body antialiased bg-theme-bg text-theme-white`}
       >
+        <AOSInit />
         {children}
       </body>
     </html>

@@ -35,7 +35,7 @@ const HowItWorks = () => {
 
   return (
     <Section id="how-it-works" className="bg-theme-surface">
-      <div className="text-center mb-20">
+      <div data-aos="fade-up" className="text-center mb-20">
         <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">
           How It <span className="text-theme-purple">Works</span>
         </h2>
@@ -50,13 +50,14 @@ const HowItWorks = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative z-10">
           {steps.map((step, index) => (
-            <StepCard 
-              key={index}
-              number={index + 1}
-              title={step.title}
-              description={step.description}
-              icon={step.icon}
-            />
+            <div key={index} data-aos="fade-up" data-aos-delay={index * 200}>
+              <StepCard 
+                number={index + 1}
+                title={step.title}
+                description={step.description}
+                icon={step.icon}
+              />
+            </div>
           ))}
         </div>
       </div>

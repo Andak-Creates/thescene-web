@@ -4,7 +4,7 @@ import Section from '../Section';
 const Pricing = () => {
   return (
     <Section id="pricing" className="bg-theme-bg">
-      <div className="bg-theme-surface border border-theme-border rounded-3xl p-10 md:p-16 relative overflow-hidden">
+      <div data-aos="zoom-in" className="bg-theme-surface border border-theme-border rounded-3xl p-10 md:p-16 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-theme-purple/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
