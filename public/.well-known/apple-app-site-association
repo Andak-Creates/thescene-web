@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID123.com.vindi.thescene",
+        "paths": ["/party/*"]
+      },
+      {
+        "appID": "TEAMID123.com.vindi.thescene.dev",
+        "paths": ["/party/*"]
+      }
+    ]
+  }
+}
