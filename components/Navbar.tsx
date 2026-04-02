@@ -21,6 +21,7 @@ const Navbar = () => {
     { name: 'How It Works', href: '/#how-it-works' },
     { name: 'For Hosts', href: '/#for-hosts' },
     { name: 'FAQ', href: '/faq' },
+    { name: 'Browse Events', href: '/browse' },
   ];
 
   return (

@@ -1,105 +1,241 @@
-import React from 'react';
-import Link from 'next/link';
-import type { Metadata } from 'next';
+import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  // Awaiting params in Next.js 16 to get the route parameters
-  await params;
-  return {
-    title: `You're invited to a party! | TheScene`,
-    description: 'Download TheScene app to view this party and secure your spot.',
-    openGraph: {
-      title: "You're invited to a party!",
-      description: 'Download TheScene app to view this party and secure your spot.',
-      siteName: 'TheScene',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: "You're invited to a party!",
-      description: 'Download TheScene app to view this party and secure your spot.',
-    }
-  };
+interface PageProps {
+  params: Promise<{ id: string }>
 }
 
-export default async function PartyFallback({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  await params;
+async function getParty(id: string) {
+  const { data, error } = await supabase
+    .from('parties')
+    .select(`
+      id, title, description, date, end_date, date_tba, location, location_tba,
+      city, state, country, ticket_price, ticket_price_tba, currency_code,
+      music_genres, vibes, dress_code, flyer_url, is_published,
+      host_id, host_profile_id,
+      host:profiles!host_id (username, avatar_url),
+      host_profile:host_profiles!host_profile_id (id, name, avatar_url, is_verified),
+      media:party_media (media_url, media_type, thumbnail_url, is_primary, display_order),
+      tiers:ticket_tiers (id, name, price, quantity, quantity_sold, is_active, tier_order)
+    `)
+    .eq('id', id)
+    .eq('is_published', true)
+    .single()
+
+  if (error || !data) return null
+  return data
+}
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  NGN: '₦', USD: '$', GBP: '£', EUR: '€', GHS: '₵', KES: 'KSh', ZAR: 'R',
+}
+
+function resolveImage(party: any): string | null {
+  if (party.media?.length > 0) {
+    const sorted = [...party.media].sort((a: any, b: any) => {
+      if (a.is_primary) return -1
+      if (b.is_primary) return 1
+      return (a.display_order ?? 0) - (b.display_order ?? 0)
+    })
+    const first = sorted[0]
+    if (first.media_type === 'video') return first.thumbnail_url ?? null
+    return first.media_url
+  }
+  return party.flyer_url ?? null
+}
+
+function formatDateTime(dateString: string | null) {
+  if (!dateString) return null
+  const d = new Date(dateString)
+  return {
+    date: d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+    time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+  }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const party = await getParty(id)
+  if (!party) return { title: 'Event Not Found — TheScene' }
+  const image = resolveImage(party)
+  return {
+    title: `${party.title} — TheScene`,
+    description: party.description ?? `Get tickets for ${party.title}`,
+    openGraph: {
+      title: party.title,
+      description: party.description ?? undefined,
+      images: image ? [{ url: image }] : [],
+    },
+  }
+}
+
+export default async function PartyPage({ params }: PageProps) {
+  const { id } = await params
+  const party = await getParty(id)
+  if (!party) notFound()
+
+  const imageUrl = resolveImage(party)
+  const symbol = CURRENCY_SYMBOLS[party.currency_code] ?? party.currency_code + ' '
+  const dt = formatDateTime(party.date)
+  const activeTiers = (party.tiers ?? [])
+    .filter((t: any) => t.is_active)
+    .sort((a: any, b: any) => a.tier_order - b.tier_order)
+  const hostName = (party.host_profile as any)?.name ?? (party.host as any)?.username ?? 'Host'
+  const minPrice = activeTiers.length > 0 ? Math.min(...activeTiers.map((t: any) => t.price)) : null
 
   return (
-    <main className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center relative overflow-hidden px-6">
-      {/* Subtle Background Gradient matching the Hero and brand */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(147,51,234,0.15),transparent_50%)]"></div>
-      
-      <div className="relative z-10 max-w-xl w-full text-center space-y-6 sm:space-y-8 px-6 py-8 sm:p-10 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-md shadow-2xl">
-        {/* Brand Icon / Party Icon */}
-        <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-theme-purple to-purple-400 rounded-[1.25rem] sm:rounded-[1.5rem] flex items-center justify-center shadow-[0_0_40px_rgba(147,51,234,0.4)] mb-2 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-white/20 blur-md rounded-full transform scale-0 group-hover:scale-150 transition-transform duration-700 ease-out"></div>
-          <svg className="w-12 h-12 text-white relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
-          </svg>
-        </div>
+    <div style={{ minHeight: '100vh', paddingBottom: 100 }}>
+      {/* Hero Image */}
+      <div style={{
+        position: 'relative', width: '100%', maxHeight: 520,
+        aspectRatio: '16/9', overflow: 'hidden', background: 'rgba(255,255,255,0.03)',
+      }}>
+        {imageUrl ? (
+          <Image src={imageUrl} alt={party.title} fill priority sizes="100vw" style={{ objectFit: 'cover' }} />
+        ) : (
+          <div style={{ height: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 80, opacity: 0.15 }}>🎉</div>
+        )}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom, rgba(10,0,16,0.1) 0%, rgba(10,0,16,0.8) 100%)',
+        }} />
+      </div>
 
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-white tracking-tight leading-tight">
-            You&apos;re Invited!
-          </h1>
-          <p className="text-lg md:text-xl text-theme-muted font-medium leading-relaxed px-4">
-            Download <strong className="text-white font-semibold">TheScene</strong> app to view the details for this party and secure your spot.
-          </p>
-        </div>
-
-        <div className="pt-4 sm:pt-6 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-          {/* Apple App Store Button */}
-          <a
-            href="https://apps.apple.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 border border-white/20 rounded-2xl text-white hover:bg-white/10 hover:border-white/30 active:scale-95 transition-all duration-300 w-full sm:w-auto overflow-hidden group relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-            <svg viewBox="0 0 384 512" className="h-6 w-6 sm:h-7 sm:w-7 fill-current relative z-10" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg">
-              <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-            </svg>
-            <div className="flex flex-col items-start leading-[1.1] relative z-10 pt-0.5">
-              <span className="text-[10px] sm:text-[11px] font-medium text-white/70 tracking-wide uppercase">Download on the</span>
-              <span className="text-xl sm:text-2xl font-semibold tracking-tight">App Store</span>
+      {/* Content */}
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '0 24px' }}>
+        {/* Title card */}
+        <div style={{ marginTop: '-60px', position: 'relative', zIndex: 10, marginBottom: 32 }}>
+          <div className="glass" style={{ borderRadius: 24, padding: '28px 28px 24px' }}>
+            <h1 style={{ margin: '0 0 8px', fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+              {party.title}
+            </h1>
+            <p style={{ margin: '0 0 20px', color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
+              Hosted by <span style={{ color: '#a855f7', fontWeight: 600 }}>{hostName}</span>
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {dt && (
+                <span style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 100, padding: '6px 14px', color: '#c084fc', fontSize: 13, fontWeight: 500 }}>
+                  📅 {dt.date}
+                </span>
+              )}
+              {dt && (
+                <span style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '6px 14px', color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                  🕐 {dt.time}
+                </span>
+              )}
+              {party.date_tba && (
+                <span style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '6px 14px', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
+                  📅 Date TBA
+                </span>
+              )}
+              {!party.location_tba && party.location && (
+                <span style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '6px 14px', color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                  📍 {party.location}{party.city ? `, ${party.city}` : ''}
+                </span>
+              )}
+              {party.dress_code && (
+                <span style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '6px 14px', color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                  👔 {party.dress_code}
+                </span>
+              )}
             </div>
-          </a>
-
-          {/* Google Play Button */}
-          <a
-            href="https://play.google.com/store/apps/details?id=com.vindi.thescene"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 border border-white/20 rounded-2xl text-white hover:bg-white/10 hover:border-white/30 active:scale-95 transition-all duration-300 w-full sm:w-auto overflow-hidden group relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-            <svg viewBox="0 0 512 512" className="h-6 w-6 sm:h-7 sm:w-7 fill-current relative z-10" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg">
-              <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
-            </svg>
-            <div className="flex flex-col items-start leading-[1.1] relative z-10 pt-0.5">
-              <span className="text-[10px] sm:text-[11px] font-medium text-white/70 tracking-wide uppercase">GET IT ON</span>
-              <span className="text-xl sm:text-2xl font-semibold tracking-tight">Google Play</span>
-            </div>
-          </a>
+          </div>
         </div>
-        
-        <div className="pt-8">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-sm font-medium text-theme-muted hover:text-white transition-colors underline-offset-4 hover:underline"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to TheScene homepage
-          </Link>
+
+        {/* Description */}
+        {party.description && (
+          <div className="glass" style={{ borderRadius: 20, padding: '24px', marginBottom: 24 }}>
+            <h2 style={{ margin: '0 0 12px', color: '#fff', fontSize: 16, fontWeight: 700 }}>About this event</h2>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, fontSize: 15 }}>{party.description}</p>
+          </div>
+        )}
+
+        {/* Vibes / Genres */}
+        {((party.music_genres?.length ?? 0) > 0 || (party.vibes?.length ?? 0) > 0) && (
+          <div className="glass" style={{ borderRadius: 20, padding: '24px', marginBottom: 24 }}>
+            {party.music_genres?.length > 0 && (
+              <div style={{ marginBottom: party.vibes?.length ? 16 : 0 }}>
+                <p style={{ margin: '0 0 10px', color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>Music</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {party.music_genres.map((g: string) => (
+                    <span key={g} style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 100, padding: '4px 12px', color: '#a855f7', fontSize: 12, fontWeight: 500 }}>{g}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {party.vibes?.length > 0 && (
+              <div>
+                <p style={{ margin: '0 0 10px', color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>Vibes</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {party.vibes.map((v: string) => (
+                    <span key={v} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 100, padding: '4px 12px', color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{v}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tickets */}
+        <div className="glass" style={{ borderRadius: 20, padding: '24px', marginBottom: 24 }}>
+          <h2 style={{ margin: '0 0 16px', color: '#fff', fontSize: 16, fontWeight: 700 }}>Tickets</h2>
+          {activeTiers.length === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>No tickets available yet</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {activeTiers.map((tier: any) => {
+                const available = tier.quantity - (tier.quantity_sold ?? 0)
+                const soldOut = available <= 0
+                return (
+                  <div key={tier.id} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    background: soldOut ? 'rgba(255,255,255,0.02)' : 'rgba(139,92,246,0.06)',
+                    border: `1px solid ${soldOut ? 'rgba(255,255,255,0.06)' : 'rgba(139,92,246,0.2)'}`,
+                    borderRadius: 14, padding: '14px 18px', opacity: soldOut ? 0.5 : 1,
+                  }}>
+                    <div>
+                      <p style={{ margin: '0 0 3px', color: '#fff', fontWeight: 700, fontSize: 15 }}>{tier.name}</p>
+                      <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{soldOut ? 'Sold out' : `${available} available`}</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ margin: 0, color: '#a855f7', fontWeight: 800, fontSize: 18 }}>
+                        {tier.price === 0 ? 'Free' : `${symbol}${tier.price.toLocaleString()}`}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
-    </main>
-  );
+
+      {/* Sticky CTA */}
+      {activeTiers.some((t: any) => (t.quantity - (t.quantity_sold ?? 0)) > 0) && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          background: 'rgba(10, 0, 16, 0.9)', backdropFilter: 'blur(16px)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 50,
+        }}>
+          <div>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Starting from</p>
+            <p style={{ margin: 0, color: '#fff', fontWeight: 800, fontSize: 20 }}>
+              {minPrice === 0 ? 'Free' : `${symbol}${minPrice?.toLocaleString()}`}
+            </p>
+          </div>
+          <Link href={`/party/${id}/checkout`} style={{
+            background: 'linear-gradient(135deg, #7C3AED, #a855f7)', color: '#fff',
+            textDecoration: 'none', fontWeight: 700, fontSize: 16, padding: '14px 36px',
+            borderRadius: 100, boxShadow: '0 0 32px rgba(139,92,246,0.4)', display: 'inline-block', transition: 'opacity 0.2s',
+          }}>
+            Get Tickets
+          </Link>
+        </div>
+      )}
+    </div>
+  )
 }

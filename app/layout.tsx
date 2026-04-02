@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import { AOSInit } from "@/components/AOSInit";
+import OpenInAppBanner from "@/components/OpenInAppBanner";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 const syne = Syne({
@@ -28,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${syne.variable} ${dmSans.variable} font-body antialiased bg-theme-bg text-theme-white`}
       >
+        <OpenInAppBanner />
         <AOSInit />
+        <Navbar />
         {children}
       </body>
     </html>
