@@ -16,9 +16,33 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "TheScene | Discover Parties and Get Tickets",
   description:
-    "Your next party starts here. Discovery mobile app for party discovery and ticketing.",
+    "Your next party starts here. Discover the best local parties, events, and buy tickets instantly with TheScene app.",
+  keywords: ["parties", "events", "tickets", "nightlife", "discovery", "thescene", "clubbing"],
+  openGraph: {
+    title: "TheScene | Discover Parties and Get Tickets",
+    description: "Your next party starts here. Discover the best local parties, events, and buy tickets instantly with TheScene app.",
+    url: "/",
+    siteName: "TheScene",
+    images: [
+      {
+        url: "/thescenne-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "TheScene Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TheScene | Discover Parties and Get Tickets",
+    description: "Your next party starts here. Discover the best local parties, events, and buy tickets instantly with TheScene app.",
+    images: ["/thescenne-logo.png"],
+  },
 };
 
 export default function RootLayout({
