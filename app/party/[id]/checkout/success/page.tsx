@@ -10,8 +10,7 @@ interface PageProps {
   searchParams: Promise<{ ticket?: string; party?: string }>
 }
 
-export default async function SuccessPage({ params, searchParams }: PageProps) {
-  const { id } = await params
+export default async function SuccessPage({ searchParams }: PageProps) {
   const { ticket, party } = await searchParams
 
   return (

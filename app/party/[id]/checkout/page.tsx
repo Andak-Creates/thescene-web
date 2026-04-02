@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
@@ -38,27 +39,28 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
   const pendingRef = useRef<any>(null)
 
-  useEffect(() => { fetchData() }, [id])
+  useEffect(() => {
+    async function fetchData() {
+      const [{ data: partyData }, { data: tiersData }] = await Promise.all([
+        supabase.from('parties')
+          .select('id, title, date, location, city, currency_code, host_id, host_profile:host_profiles!host_profile_id(name)')
+          .eq('id', id).single(),
+        supabase.from('ticket_tiers')
+          .select('*').eq('party_id', id).eq('is_active', true).order('tier_order'),
+      ])
 
-  async function fetchData() {
-    const [{ data: partyData }, { data: tiersData }] = await Promise.all([
-      supabase.from('parties')
-        .select('id, title, date, location, city, currency_code, host_id, host_profile:host_profiles!host_profile_id(name)')
-        .eq('id', id).single(),
-      supabase.from('ticket_tiers')
-        .select('*').eq('party_id', id).eq('is_active', true).order('tier_order'),
-    ])
+      if (partyData) setParty(partyData as any)
 
-    if (partyData) setParty(partyData as any)
-
-    const activeTiers = (tiersData ?? []).map((t: any) => ({
-      ...t,
-      available: t.quantity - (t.quantity_sold ?? 0),
-    }))
-    setTiers(activeTiers)
-    if (activeTiers.length > 0) setSelectedTierId(activeTiers[0].id)
-    setLoading(false)
-  }
+      const activeTiers = (tiersData ?? []).map((t: any) => ({
+        ...t,
+        available: t.quantity - (t.quantity_sold ?? 0),
+      }))
+      setTiers(activeTiers)
+      if (activeTiers.length > 0) setSelectedTierId(activeTiers[0].id)
+      setLoading(false)
+    }
+    fetchData()
+  }, [id])
 
   const selectedTier = tiers.find(t => t.id === selectedTierId) as any
   const available = selectedTier ? selectedTier.quantity - (selectedTier.quantity_sold ?? 0) : 0

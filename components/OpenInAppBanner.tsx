@@ -15,7 +15,7 @@ export default function OpenInAppBanner() {
   useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     const wasDismissed = sessionStorage.getItem('app_banner_dismissed') === '1'
-    if (isMobile && !wasDismissed) setShow(true)
+    if (isMobile && !wasDismissed) setTimeout(() => setShow(true), 0)
   }, [])
 
   const handleDismiss = () => {

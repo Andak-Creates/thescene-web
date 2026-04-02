@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@/lib/supabase'
 import EventCard from '@/components/EventCard'
 import type { Metadata } from 'next'

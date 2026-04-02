@@ -17,7 +17,8 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: "TheScene | Discover Parties and Get Tickets",
-  description: "Your next party starts here. Discovery mobile app for party discovery and ticketing.",
+  description:
+    "Your next party starts here. Discovery mobile app for party discovery and ticketing.",
 };
 
 export default function RootLayout({
@@ -26,8 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth">
       <body
+        suppressHydrationWarning
         className={`${syne.variable} ${dmSans.variable} font-body antialiased bg-theme-bg text-theme-white`}
       >
         <OpenInAppBanner />
