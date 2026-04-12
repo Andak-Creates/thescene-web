@@ -14,7 +14,7 @@ export default function FAQ() {
   const faqItems = [
     {
       question: "How do I sign up for TheScene?",
-      answer: "Download the app from the App Store or via APK, and follow the simple on-boarding process to create your account using your email or social login."
+      answer: "Download the app from the App Store or via APK, and follow the simple on-boarding process to create your account using your email. Social login is coming soon!"
     },
     {
       question: "How do I buy tickets?",
