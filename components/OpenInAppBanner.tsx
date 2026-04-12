@@ -6,11 +6,23 @@ import { usePathname } from 'next/navigation'
 export default function OpenInAppBanner() {
   const [show, setShow] = useState(false)
   const [dismissed, setDismissed] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
 
   // Extract party ID from pathname for deep link
   const partyMatch = pathname.match(/^\/party\/([^/]+)/)
   const partyId = partyMatch ? partyMatch[1] : null
+
+  // Navbar height varies: ~80px (scrolled: false) and ~64px (scrolled: true)
+  const navbarHeight = isScrolled ? 64 : 80
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
@@ -44,12 +56,17 @@ export default function OpenInAppBanner() {
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+      position: 'fixed', 
+      top: navbarHeight, 
+      left: 0, 
+      right: 0, 
+      zIndex: 40,
       background: 'rgba(10, 0, 16, 0.95)',
       borderBottom: '1px solid rgba(139, 92, 246, 0.3)',
       backdropFilter: 'blur(16px)',
       padding: '10px 16px',
       display: 'flex', alignItems: 'center', gap: '12px',
+      transition: 'top 0.3s ease',
     }}>
       <div style={{
         width: 40, height: 40, borderRadius: 10,

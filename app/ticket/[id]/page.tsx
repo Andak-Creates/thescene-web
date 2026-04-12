@@ -47,7 +47,7 @@ export default async function TicketPage({ params }: PageProps) {
   const usedAll = ticket.quantity_used >= ticket.quantity_purchased
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px 100px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '120px 24px 100px' }}>
       <div style={{ width: '100%', maxWidth: 480 }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>

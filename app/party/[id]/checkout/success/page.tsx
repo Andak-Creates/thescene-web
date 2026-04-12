@@ -16,7 +16,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
   return (
     <div style={{
       minHeight: '80vh', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', padding: '40px 24px', textAlign: 'center',
+      alignItems: 'center', justifyContent: 'center', padding: '120px 24px 40px', textAlign: 'center',
     }}>
       {/* Success icon */}
       <div style={{

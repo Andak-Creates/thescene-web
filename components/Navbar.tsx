@@ -25,7 +25,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-theme-bg/80 backdrop-blur-md border-b border-theme-border py-4' : 'bg-transparent py-6'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-theme-bg/80 backdrop-blur-md border-b border-theme-border ${isScrolled ? 'py-4' : 'py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold font-heading text-theme-purple tracking-tighter">
           TheScene

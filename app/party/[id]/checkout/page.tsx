@@ -175,7 +175,7 @@ export default function CheckoutPage() {
     <>
       <Script src="https://js.paystack.co/v1/inline.js" onLoad={() => setPaystackReady(true)} />
 
-      <div style={{ maxWidth: 560, margin: '0 auto', padding: '32px 24px 100px' }}>
+      <div style={{ maxWidth: 560, margin: '0 auto', padding: '120px 24px 100px' }}>
         <h1 style={{ margin: '0 0 8px', color: '#fff', fontSize: 26, fontWeight: 800 }}>Get Tickets</h1>
         <p style={{ margin: '0 0 32px', color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>{party?.title}</p>
 
