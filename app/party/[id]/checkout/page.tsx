@@ -104,22 +104,7 @@ export default function CheckoutPage() {
       }
 
       const ticketId = result.ticketId
-
-      supabase.functions.invoke('send-ticket-email', {
-        body: {
-          ticketId,
-          guestEmail: guestEmail.toLowerCase().trim(),
-          guestName: guestName.trim(),
-          partyTitle: party.title,
-          partyDate: party.date,
-          partyLocation: party.location,
-          partyCity: party.city,
-          tierName: p.tierName,
-          quantity,
-          totalPaid: p.total,
-          currency: party.currency_code,
-        },
-      }).catch(e => console.error('Email send failed:', e))
+      // Email is sent server-side by create-guest-ticket — no need to call send-ticket-email here
 
       router.push(`/party/${id}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}`)
     } catch (err: any) {

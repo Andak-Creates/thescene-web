@@ -62,7 +62,7 @@ export default async function TicketPage({ params }: PageProps) {
           <div style={{ height: 4, background: 'linear-gradient(90deg, #7C3AED, #a855f7)' }} />
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 24px 24px' }}>
-            <QRViewer ticketId={id} />
+            <QRViewer ticketId={id} partyId={party.id} />
             <p style={{ margin: '12px 0 0', color: 'rgba(255,255,255,0.25)', fontSize: 11, letterSpacing: '1px', textTransform: 'uppercase' }}>
               Scan at the door
             </p>
