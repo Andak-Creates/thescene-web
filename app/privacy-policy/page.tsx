@@ -137,7 +137,7 @@ export default function PrivacyPolicy() {
                 </h2>
                 <p>
                   If you have any questions about this Privacy Policy, please
-                  contact us at <strong>support@thescene.app</strong>.
+                  contact us at <strong>thesceneappsupport@gmail.com</strong>.
                 </p>
               </section>
 

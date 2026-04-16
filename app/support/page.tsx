@@ -24,15 +24,29 @@ export default function Support() {
               <div className="space-y-12">
                 <div>
                   <h2 className="text-2xl font-heading font-bold text-white mb-4 text-theme-purple">
-                    Contact Form
+                    Contact Us
                   </h2>
-                  <form className="space-y-6">
+                  <form
+                    className="space-y-6"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      const form = e.currentTarget
+                      const name = (form.elements.namedItem('name') as HTMLInputElement).value
+                      const email = (form.elements.namedItem('email') as HTMLInputElement).value
+                      const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
+                      const subject = encodeURIComponent(`TheScene Support — ${name}`)
+                      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`)
+                      window.location.href = `mailto:thesceneappsupport@gmail.com?subject=${subject}&body=${body}`
+                    }}
+                  >
                     <div>
                       <label className="block text-white mb-2 font-medium">
                         Full Name
                       </label>
                       <input
+                        name="name"
                         type="text"
+                        required
                         className="w-full bg-theme-surface border border-theme-border rounded-xl px-6 py-4 text-white focus:outline-none focus:border-theme-purple"
                         placeholder="Your name"
                       />
@@ -42,7 +56,9 @@ export default function Support() {
                         Email Address
                       </label>
                       <input
+                        name="email"
                         type="email"
+                        required
                         className="w-full bg-theme-surface border border-theme-border rounded-xl px-6 py-4 text-white focus:outline-none focus:border-theme-purple"
                         placeholder="Your email"
                       />
@@ -52,12 +68,14 @@ export default function Support() {
                         Message
                       </label>
                       <textarea
+                        name="message"
                         rows={5}
+                        required
                         className="w-full bg-theme-surface border border-theme-border rounded-xl px-6 py-4 text-white focus:outline-none focus:border-theme-purple"
                         placeholder="How can we help?"
                       ></textarea>
                     </div>
-                    <Button type="button" className="w-full py-4 text-lg">
+                    <Button type="submit" className="w-full py-4 text-lg">
                       Send Message
                     </Button>
                   </form>
