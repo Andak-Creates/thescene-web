@@ -20,7 +20,8 @@ async function getParties(city?: string) {
       media:party_media (media_url, media_type, thumbnail_url, is_primary)
     `)
     .eq('is_published', true)
-    .order('created_at', { ascending: false })
+    .or(`date.gte.${new Date().toISOString()},date_tba.eq.true`)
+    .order('date', { ascending: true })
     .limit(60)
 
   if (city) {

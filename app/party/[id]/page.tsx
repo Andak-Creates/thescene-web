@@ -81,6 +81,7 @@ export default async function PartyPage({ params }: PageProps) {
   const imageUrl = resolveImage(party)
   const symbol = CURRENCY_SYMBOLS[party.currency_code] ?? party.currency_code + ' '
   const dt = formatDateTime(party.date)
+  const isEnded = party.date && new Date(party.date) < new Date() && !party.date_tba;
   const activeTiers = (party.tiers ?? [])
     .filter((t: any) => t.is_active)
     .sort((a: any, b: any) => a.tier_order - b.tier_order)
@@ -140,6 +141,19 @@ export default async function PartyPage({ params }: PageProps) {
               {party.dress_code && (
                 <span style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '6px 14px', color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
                   👔 {party.dress_code}
+                </span>
+              )}
+              {isEnded && (
+                <span style={{ 
+                  background: 'rgba(239,68,68,0.1)', 
+                  border: '1px solid rgba(239,68,68,0.25)', 
+                  borderRadius: 100, 
+                  padding: '6px 14px', 
+                  color: '#f87171', 
+                  fontSize: 13, 
+                  fontWeight: 600 
+                }}>
+                  🛑 Event Ended
                 </span>
               )}
             </div>
@@ -228,12 +242,23 @@ export default async function PartyPage({ params }: PageProps) {
               {minPrice === 0 ? 'Free' : `${symbol}${minPrice?.toLocaleString()}`}
             </p>
           </div>
-          <Link href={`/party/${id}/checkout`} style={{
-            background: 'linear-gradient(135deg, #7C3AED, #a855f7)', color: '#fff',
-            textDecoration: 'none', fontWeight: 700, fontSize: 16, padding: '14px 36px',
-            borderRadius: 100, boxShadow: '0 0 32px rgba(139,92,246,0.4)', display: 'inline-block', transition: 'opacity 0.2s',
-          }}>
-            Get Tickets
+          <Link 
+            href={isEnded ? '#' : `/party/${id}/checkout`} 
+            style={{
+              background: isEnded ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #7C3AED, #a855f7)', 
+              color: isEnded ? 'rgba(255,255,255,0.3)' : '#fff',
+              textDecoration: 'none', 
+              fontWeight: 700, 
+              fontSize: 16, 
+              padding: '14px 36px',
+              borderRadius: 100, 
+              boxShadow: isEnded ? 'none' : '0 0 32px rgba(139,92,246,0.4)', 
+              display: 'inline-block', 
+              transition: 'opacity 0.2s',
+              cursor: isEnded ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isEnded ? 'Sales Ended' : 'Get Tickets'}
           </Link>
         </div>
       )}
