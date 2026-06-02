@@ -20,21 +20,21 @@ const Pricing = () => {
             <div className="bg-theme-bg/50 border border-theme-border p-6 rounded-2xl flex items-center justify-between">
               <div>
                 <h4 className="font-heading font-semibold text-white text-xl">For Attendees</h4>
-                <p className="text-theme-muted">Finding parties and using the app</p>
+                <p className="text-theme-muted">Free to browse. Only 5% fee for tickets.</p>
               </div>
-              <div className="text-theme-purple font-bold text-2xl">FREE</div>
+              <div className="text-theme-purple font-bold text-2xl">5% Fee</div>
             </div>
             
             <div className="bg-theme-bg/50 border border-theme-border p-6 rounded-2xl flex items-center justify-between">
               <div>
                 <h4 className="font-heading font-semibold text-white text-xl">For Hosts</h4>
-                <p className="text-theme-muted">Service fee per ticket sold</p>
+                <p className="text-theme-muted">Get 100% of your revenue (Promo till August)</p>
               </div>
-              <div className="text-theme-purple font-bold text-2xl">Flat Fee</div>
+              <div className="text-theme-purple font-bold text-2xl">0% Fee</div>
             </div>
             
             <p className="text-theme-muted text-sm italic">
-              * Hosts pay a small service fee per ticket sold to cover payment processing and platform maintenance. There are no hidden setup costs.
+              * Hosts get 100% of revenue for now till August, while attendees only pay a 5% fee for tickets. No hidden setup costs.
             </p>
           </div>
         </div>
