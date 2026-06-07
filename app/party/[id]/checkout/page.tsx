@@ -109,7 +109,12 @@ export default function CheckoutPage() {
       router.push(`/party/${id}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}`)
     } catch (err: any) {
       console.error('handlePaymentSuccess error:', err)
-      setError('Payment received but ticket creation failed. Contact support with reference: ' + reference)
+      const actualError = err instanceof Error ? err.message : String(err)
+      if (p.total === 0) {
+        setError(`Ticket creation failed: ${actualError}. Please try again. (Ref: ${reference})`)
+      } else {
+        setError(`Payment received but ticket creation failed. Contact support with reference: ${reference}`)
+      }
       setPurchasing(false)
     }
   }
