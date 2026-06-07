@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 interface TicketTier {
   id: string; name: string; price: number
   quantity: number; quantity_sold: number; is_active: boolean; tier_order: number
+  max_per_order: number | null
 }
 
 interface Party {
@@ -73,7 +74,11 @@ export default function CheckoutPage() {
     if (!guestName.trim()) return 'Please enter your name'
     if (!guestEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) return 'Please enter a valid email'
     if (!selectedTierId) return 'Please select a ticket type'
+    
+    const maxLimit = selectedTier?.max_per_order ?? 999999
+    if (quantity > maxLimit) return `Max ${maxLimit} tickets per order for this tier`
     if (quantity < 1 || quantity > available) return `Only ${available} tickets available`
+    
     const currency = party?.currency_code ?? 'NGN'
     if (!PAYSTACK_CURRENCIES.includes(currency)) return `Currency ${currency} not supported by Paystack`
     return null
@@ -227,13 +232,20 @@ export default function CheckoutPage() {
 
           {selectedTier && available > 1 && (
             <div style={{ marginTop: 20 }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>Quantity</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Quantity</label>
+                {selectedTier.max_per_order && (
+                  <span style={{ color: '#a855f7', fontSize: 11, background: 'rgba(168,85,247,0.15)', padding: '2px 8px', borderRadius: 10 }}>
+                    Max {selectedTier.max_per_order}
+                  </span>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '10px 16px', width: 'fit-content' }}>
                 <button onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}
                   style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: quantity <= 1 ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.2)', color: '#fff', fontSize: 20, cursor: quantity <= 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
                 <span style={{ color: '#fff', fontWeight: 800, fontSize: 22, minWidth: 32, textAlign: 'center' }}>{quantity}</span>
-                <button onClick={() => setQuantity(q => Math.min(available, q + 1))} disabled={quantity >= available}
-                  style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: quantity >= available ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.2)', color: '#fff', fontSize: 20, cursor: quantity >= available ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                <button onClick={() => setQuantity(q => Math.min(available, selectedTier.max_per_order ?? 999999, q + 1))} disabled={quantity >= available || (selectedTier.max_per_order && quantity >= selectedTier.max_per_order)}
+                  style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: quantity >= available || (selectedTier.max_per_order && quantity >= selectedTier.max_per_order) ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.2)', color: '#fff', fontSize: 20, cursor: quantity >= available || (selectedTier.max_per_order && quantity >= selectedTier.max_per_order) ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
               </div>
             </div>
           )}
