@@ -57,7 +57,10 @@ export default function CheckoutPage() {
         available: t.quantity - (t.quantity_sold ?? 0),
       }))
       setTiers(activeTiers)
-      if (activeTiers.length > 0) setSelectedTierId(activeTiers[0].id)
+      if (activeTiers.length > 0) {
+        const firstAvailable = activeTiers.find((t: any) => t.available > 0)
+        setSelectedTierId(firstAvailable ? firstAvailable.id : activeTiers[0].id)
+      }
       setLoading(false)
     }
     fetchData()
