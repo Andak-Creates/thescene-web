@@ -38,6 +38,8 @@ export default function CheckoutPage() {
   const [paystackReady, setPaystackReady] = useState(false)
   const [purchasing, setPurchasing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showBankTransferModal, setShowBankTransferModal] = useState(false)
+  const [bankTransferRef, setBankTransferRef] = useState('')
   const pendingRef = useRef<any>(null)
 
   useEffect(() => {
@@ -121,7 +123,9 @@ export default function CheckoutPage() {
       if (p.total === 0) {
         setError(`Ticket creation failed: ${actualError}. Please try again. (Ref: ${reference})`)
       } else {
-        setError(`Payment received but ticket creation failed. Contact support with reference: ${reference}`)
+        // Bank transfer — show friendly modal instead of scary error
+        setBankTransferRef(reference)
+        setShowBankTransferModal(true)
       }
       setPurchasing(false)
     }
@@ -169,8 +173,49 @@ export default function CheckoutPage() {
     </div>
   )
 
+  // Bank Transfer Pending Modal
+  const BankTransferModal = () => (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+    }}>
+      <div style={{
+        background: '#1a1025', border: '1px solid rgba(139,92,246,0.3)',
+        borderRadius: 24, padding: 32, maxWidth: 440, width: '100%',
+        boxShadow: '0 0 60px rgba(139,92,246,0.2)',
+      }}>
+        <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>⏳</div>
+        <h2 style={{ margin: '0 0 12px', color: '#fff', fontSize: 22, fontWeight: 800, textAlign: 'center' }}>
+          Your ticket is on its way!
+        </h2>
+        <p style={{ margin: '0 0 16px', color: 'rgba(255,255,255,0.6)', fontSize: 15, textAlign: 'center', lineHeight: 1.6 }}>
+          Bank transfers take a few minutes to confirm. Your ticket will be <strong style={{ color: '#a855f7' }}>automatically emailed to you within 5–10 minutes</strong> once your payment settles.
+        </p>
+        <div style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 12, padding: '12px 16px', marginBottom: 24 }}>
+          <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Payment Reference</p>
+          <p style={{ margin: '4px 0 0', color: '#a855f7', fontSize: 13, fontWeight: 700, fontFamily: 'monospace', wordBreak: 'break-all' }}>{bankTransferRef}</p>
+        </div>
+        <p style={{ margin: '0 0 20px', color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center' }}>
+          Nothing after 10 minutes? Contact support with the reference above.
+        </p>
+        <button
+          onClick={() => setShowBankTransferModal(false)}
+          style={{
+            width: '100%', background: 'linear-gradient(135deg, #7C3AED, #a855f7)',
+            color: '#fff', border: 'none', borderRadius: 100, padding: '14px',
+            fontSize: 15, fontWeight: 700, cursor: 'pointer',
+          }}
+        >
+          Got it, I'll check my email
+        </button>
+      </div>
+    </div>
+  )
+
   return (
     <>
+      {showBankTransferModal && <BankTransferModal />}
       <Script src="https://js.paystack.co/v1/inline.js" onLoad={() => setPaystackReady(true)} />
 
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '120px 24px 100px' }}>
