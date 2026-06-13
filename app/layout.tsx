@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
-import { AOSInit } from "@/components/AOSInit";
 import OpenInAppBanner from "@/components/OpenInAppBanner";
 import AppEntryModal from "@/components/AppEntryModal";
 import Navbar from "@/components/Navbar";
@@ -63,7 +62,6 @@ export default function RootLayout({
       >
         <OpenInAppBanner />
         <AppEntryModal />
-        <AOSInit />
         <Navbar />
         {children}
       </body>

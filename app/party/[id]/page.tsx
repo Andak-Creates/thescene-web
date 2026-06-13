@@ -5,12 +5,18 @@ import Link from 'next/link'
 import { getOptimizedImageUrl } from '@/lib/media'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { cache } from 'react'
+
+// Revalidate cached pages every 60 seconds so repeat visitors get instant loads
+export const revalidate = 60
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getParty(id: string) {
+// cache() deduplicates calls within the same request — generateMetadata and
+// PartyPage both call this but it only hits Supabase once.
+const getParty = cache(async (id: string) => {
   const { data, error } = await supabase
     .from('parties')
     .select(`
@@ -29,7 +35,7 @@ async function getParty(id: string) {
 
   if (error || !data) return null
   return data
-}
+})
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   NGN: '₦', USD: '$', GBP: '£', EUR: '€', GHS: '₵', KES: 'KSh', ZAR: 'R',
