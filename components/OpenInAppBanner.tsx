@@ -52,7 +52,7 @@ export default function OpenInAppBanner() {
     }, 2000)
   }
 
-  if (!show || dismissed) return null
+  if (!show || dismissed || pathname === "/reset-password") return null
 
   return (
     <div style={{

@@ -9,6 +9,9 @@ const AppEntryModal = () => {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Don't show on the reset-password page (it handles its own deep linking)
+    if (pathname === "/reset-password") return;
+
     // Only show on mobile devices
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (!isMobile) return;
@@ -22,9 +25,9 @@ const AppEntryModal = () => {
       }, 1000); // Show after 1 second
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [pathname]);
 
-  if (!isOpen) return null;
+  if (!isOpen || pathname === "/reset-password") return null;
 
   const handleOpenApp = () => {
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
