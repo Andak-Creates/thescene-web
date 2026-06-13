@@ -772,7 +772,7 @@ export default function CheckoutPage() {
         <button
           onClick={handlePay}
           disabled={
-            purchasing || !paystackReady || !selectedTier || available === 0
+            purchasing || (!paystackReady && total > 0) || !selectedTier || available === 0
           }
           style={{
             width: "100%",
