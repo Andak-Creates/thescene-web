@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@/lib/supabase'
+import { unstable_cache } from 'next/cache'
 import EventCard from '@/components/EventCard'
 import type { Metadata } from 'next'
 
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
   description: 'Discover the best parties and events near you. Buy tickets instantly — no account required.',
 }
 
+// Parties revalidate every 60 seconds (events change frequently)
 export const revalidate = 60
 
 async function getParties(city?: string) {
@@ -36,15 +38,21 @@ async function getParties(city?: string) {
   return data ?? []
 }
 
-async function getCities() {
-  const { data } = await supabase
-    .from('parties')
-    .select('city, state')
-    .eq('is_published', true)
-    .not('city', 'is', null)
-  const cities = [...new Set((data ?? []).map(p => p.city).filter(Boolean))]
-  return cities.slice(0, 10) as string[]
-}
+// Cities change rarely — cache this result for 1 hour independently of the
+// page-level revalidate so party list refreshes don't force a cities re-fetch.
+const getCities = unstable_cache(
+  async () => {
+    const { data } = await supabase
+      .from('parties')
+      .select('city, state')
+      .eq('is_published', true)
+      .not('city', 'is', null)
+    const cities = [...new Set((data ?? []).map(p => p.city).filter(Boolean))]
+    return cities.slice(0, 10) as string[]
+  },
+  ['browse-cities'],          // cache key
+  { revalidate: 3600 }        // 1 hour
+)
 
 export default async function BrowsePage({
   searchParams,

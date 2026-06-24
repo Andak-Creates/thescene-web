@@ -23,7 +23,7 @@ const getParty = cache(async (id: string) => {
       id, title, description, date, end_date, date_tba, location, location_tba,
       city, state, country, ticket_price, ticket_price_tba, currency_code,
       music_genres, vibes, dress_code, flyer_url, is_published,
-      host_id, host_profile_id,
+      host_id, host_profile_id, show_ticket_count,
       host:profiles!host_id (username, avatar_url),
       host_profile:host_profiles!host_profile_id (id, name, avatar_url, is_verified),
       media:party_media (media_url, media_type, thumbnail_url, is_primary, display_order),
@@ -62,6 +62,17 @@ function formatDateTime(dateString: string | null) {
     date: d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
     time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
   }
+}
+
+// Pre-render every published party page at build time.
+// New parties created after the build are still served via ISR (revalidate: 60).
+export async function generateStaticParams() {
+  const { data } = await supabase
+    .from('parties')
+    .select('id')
+    .eq('is_published', true)
+
+  return (data ?? []).map((p) => ({ id: String(p.id) }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -223,7 +234,13 @@ export default async function PartyPage({ params }: PageProps) {
                   }}>
                     <div>
                       <p style={{ margin: '0 0 3px', color: '#fff', fontWeight: 700, fontSize: 15 }}>{tier.name}</p>
-                      <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{soldOut ? 'Sold out' : `${available} available`}</p>
+                      {soldOut ? (
+                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Sold out</p>
+                      ) : party.show_ticket_count ? (
+                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{available} available</p>
+                      ) : (
+                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Available</p>
+                      )}
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <p style={{ margin: 0, color: '#a855f7', fontWeight: 800, fontSize: 18 }}>
