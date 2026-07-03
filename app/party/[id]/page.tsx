@@ -99,7 +99,13 @@ export default async function PartyPage({ params }: PageProps) {
   const imageUrl = resolveImage(party)
   const symbol = CURRENCY_SYMBOLS[party.currency_code] ?? party.currency_code + ' '
   const dt = formatDateTime(party.date)
-  const isEnded = party.date && new Date(party.date) < new Date() && !party.date_tba;
+  const isEnded = party.date_tba
+    ? false
+    : party.end_date
+    ? new Date(party.end_date) < new Date()
+    : party.date
+    ? new Date(party.date) < new Date(new Date().getTime() - 12 * 60 * 60 * 1000)
+    : false;
   const activeTiers = (party.tiers ?? [])
     .filter((t: any) => t.is_active)
     .sort((a: any, b: any) => a.tier_order - b.tier_order)

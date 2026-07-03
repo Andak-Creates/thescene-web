@@ -13,16 +13,18 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 async function getParties(city?: string) {
+  const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
   let query = supabase
     .from('parties')
     .select(`
-      id, title, date, date_tba, city, state, flyer_url,
+      id, title, date, end_date, date_tba, city, state, flyer_url,
       ticket_price, currency_code,
       host_profile:host_profiles!host_profile_id (name, is_verified),
       media:party_media (media_url, media_type, thumbnail_url, is_primary)
     `)
     .eq('is_published', true)
-    .or(`date.gte.${new Date().toISOString()},date_tba.eq.true`)
+    .or(`date.gte.${twelveHoursAgo.toISOString()},end_date.gte.${now.toISOString()},date_tba.eq.true`)
     .order('date', { ascending: true })
     .limit(60)
 
@@ -35,7 +37,15 @@ async function getParties(city?: string) {
     console.error('getParties error:', JSON.stringify(error))
     return []
   }
-  return data ?? []
+  
+  return (data ?? []).filter((p: any) => {
+    if (p.date_tba) return true;
+    if (p.end_date) return new Date(p.end_date) >= now;
+    if (p.date) {
+      return new Date(p.date) >= twelveHoursAgo;
+    }
+    return true;
+  });
 }
 
 // Cities change rarely — cache this result for 1 hour independently of the
