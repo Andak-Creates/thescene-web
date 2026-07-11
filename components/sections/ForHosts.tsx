@@ -45,7 +45,6 @@ const ForHosts = () => {
 
           <ul className="space-y-4 mb-10">
             {[
-              "Verified Host Badge for trust",
               "Advanced analytics for ticket sales",
               "Seamless door check-in tools",
               "Direct communication with your guests",
@@ -69,8 +68,8 @@ const ForHosts = () => {
             ))}
           </ul>
 
-          <Button href="/support" variant="primary" className="px-10">
-            Get Verified as a Host
+          <Button href="/download" variant="primary" className="px-10">
+            Download to Host
           </Button>
         </div>
 

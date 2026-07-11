@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Section from "@/components/Section";
 import Button from "@/components/Button";
+import Accordion from "@/components/Accordion";
 import Link from "next/link";
 
 export default function Support() {
@@ -29,14 +30,26 @@ export default function Support() {
                   <form
                     className="space-y-6"
                     onSubmit={(e) => {
-                      e.preventDefault()
-                      const form = e.currentTarget
-                      const name = (form.elements.namedItem('name') as HTMLInputElement).value
-                      const email = (form.elements.namedItem('email') as HTMLInputElement).value
-                      const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
-                      const subject = encodeURIComponent(`TheScene Support — ${name}`)
-                      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`)
-                      window.location.href = `mailto:thesceneappsupport@gmail.com?subject=${subject}&body=${body}`
+                      e.preventDefault();
+                      const form = e.currentTarget;
+                      const name = (
+                        form.elements.namedItem("name") as HTMLInputElement
+                      ).value;
+                      const email = (
+                        form.elements.namedItem("email") as HTMLInputElement
+                      ).value;
+                      const message = (
+                        form.elements.namedItem(
+                          "message",
+                        ) as HTMLTextAreaElement
+                      ).value;
+                      const subject = encodeURIComponent(
+                        `TheScene Support — ${name}`,
+                      );
+                      const body = encodeURIComponent(
+                        `Name: ${name}\nEmail: ${email}\n\n${message}`,
+                      );
+                      window.location.href = `mailto:thesceneappsupport@gmail.com?subject=${subject}&body=${body}`;
                     }}
                   >
                     <div>
@@ -87,34 +100,32 @@ export default function Support() {
                   <h2 className="text-2xl font-heading font-bold text-white mb-4">
                     Common Issues
                   </h2>
-                  <div className="space-y-4">
-                    {[
-                      { title: "Ticket not received", link: "/faq" },
-                      { title: "Host verification status", link: "/faq" },
-                      { title: "Refund requests", link: "/faq" },
-                      { title: "App crashing on Android", link: "/faq" },
-                    ].map((issue, idx) => (
-                      <Link
-                        key={idx}
-                        href={issue.link}
-                        className="flex items-center justify-between p-4 border border-theme-border rounded-xl hover:bg-white/5 transition-colors"
-                      >
-                        <span className="text-white">{issue.title}</span>
-                        <svg
-                          className="w-5 h-5 text-theme-purple"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </Link>
-                    ))}
+                  <div className="mt-4">
+                    <Accordion
+                      items={[
+                        {
+                          question:
+                            "I didn't receive my ticket. What should I do?",
+                          answer:
+                            "First, please check your spam folder. If it's still missing, reach out to us using the Support form with your email and transaction details, and we'll help track it down.",
+                        },
+                        {
+                          question: "How do I become a host?",
+                          answer:
+                            "Click the Plus button on the navigation tab to host your event. You would have to go through a verification process, after which you can start creating events and selling tickets right away!",
+                        },
+                        {
+                          question: "What is the refund policy?",
+                          answer:
+                            "Ticket sales are generally final. If an event is cancelled, we will coordinate with the host to ensure refunds are processed automatically to your original payment method. For disputes, contact support.",
+                        },
+                        {
+                          question: "The app is crashing on my Android device.",
+                          answer:
+                            "Please ensure you are using the latest version of TheScene app. If the issue persists, try clearing the app cache or reinstalling. Contact support with your device model if you need further help.",
+                        },
+                      ]}
+                    />
                   </div>
                 </div>
 

@@ -25,7 +25,7 @@ export default function FAQ() {
     {
       question: "How do I become a host?",
       answer:
-        "Click the Plus button on the navigation tab to host your event. You'll need to provide some identification for verification before you can start selling tickets.",
+        "Click the Plus button on the navigation tab to host your event. All hosts are equal, so you can start creating events and selling tickets right away!",
     },
     {
       question: "What payment methods are accepted?",
@@ -35,7 +35,17 @@ export default function FAQ() {
     {
       question: "What is the refund policy?",
       answer:
-        "Ticket sales are generally final. If an event is cancelled, we will coordinate with the host to ensure refunds are processed.",
+        "Ticket sales are generally final. If an event is cancelled, we will coordinate with the host to ensure refunds are processed automatically to your original payment method. For disputes, contact support.",
+    },
+    {
+      question: "I didn't receive my ticket. What should I do?",
+      answer:
+        "First, please check your spam folder. If it's still missing, reach out to us using the Support form with your email and transaction details, and we'll help track it down.",
+    },
+    {
+      question: "The app is crashing on my Android device.",
+      answer:
+        "Please ensure you are using the latest version of TheScene app. If the issue persists, try clearing the app cache or reinstalling. Contact support with your device model if you need further help.",
     },
     {
       question: "How do push notifications work?",
@@ -46,11 +56,6 @@ export default function FAQ() {
       question: "Is my data secure?",
       answer:
         "Yes, we use industry-standard encryption and partner with secure services like Supabase and Paystack to protect your information.",
-    },
-    {
-      question: "How do I delete my account?",
-      answer:
-        "You can request account deletion directly within the app settings. We process these requests within 5 business days.",
     },
     {
       question: "Can I transfer my ticket to a friend?",

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 import OpenInAppBanner from "@/components/OpenInAppBanner";
 import AppEntryModal from "@/components/AppEntryModal";
 import Navbar from "@/components/Navbar";
@@ -66,6 +67,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

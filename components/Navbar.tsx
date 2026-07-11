@@ -42,7 +42,7 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <Button href="/#download" variant="primary" className="py-2.5 px-6">
+          <Button href="/download" variant="primary" className="py-2.5 px-6">
             Download App
           </Button>
         </div>
@@ -75,7 +75,7 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <Button href="/#download" variant="primary" className="w-full">
+          <Button href="/download" variant="primary" className="w-full">
             Download App
           </Button>
         </div>

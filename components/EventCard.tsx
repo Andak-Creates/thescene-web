@@ -12,7 +12,7 @@ interface Party {
   flyer_url: string | null
   ticket_price: number | null
   currency_code: string
-  host_profile?: { name: string; is_verified: boolean } | null
+  host_profile?: { name: string } | null
   media?: { media_url: string; media_type: string; thumbnail_url: string | null; is_primary: boolean }[]
 }
 
@@ -83,9 +83,7 @@ export default function EventCard({ party }: { party: Party }) {
               <span style={{ color: '#fff', fontSize: 11, fontWeight: 600 }}>
                 {party.host_profile.name}
               </span>
-              {party.host_profile.is_verified && (
-                <span style={{ color: '#a855f7', fontSize: 10 }}>✓</span>
-              )}
+
             </div>
           )}
 
