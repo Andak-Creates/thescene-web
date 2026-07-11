@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import OpenInAppBanner from "@/components/OpenInAppBanner";
 import AppEntryModal from "@/components/AppEntryModal";
 import Navbar from "@/components/Navbar";
@@ -64,6 +65,7 @@ export default function RootLayout({
         <AppEntryModal />
         <Navbar />
         {children}
+        <Analytics />
       </body>
     </html>
   );
