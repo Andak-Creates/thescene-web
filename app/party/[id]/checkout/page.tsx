@@ -26,6 +26,9 @@ interface Party {
   currency_code: string;
   host_id: string;
   host_profile?: { name: string } | null;
+  show_ticket_count?: boolean;
+  community_link?: string | null;
+  community_platform?: string | null;
 }
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -64,7 +67,7 @@ export default function CheckoutPage() {
         supabase
           .from("parties")
           .select(
-            "id, title, date, location, city, currency_code, host_id, host_profile:host_profiles!host_profile_id(name)",
+            "id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, host_profile:host_profiles!host_profile_id(name)",
           )
           .eq("id", id)
           .single(),
@@ -151,10 +154,12 @@ export default function CheckoutPage() {
       }
 
       const ticketId = result.ticketId;
-      // Email is sent server-side by create-guest-ticket — no need to call send-ticket-email here
+      const commQuery = party.community_link 
+        ? `&community_link=${encodeURIComponent(party.community_link)}&community_platform=${encodeURIComponent(party.community_platform || "WhatsApp")}`
+        : "";
 
       router.push(
-        `/party/${id}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}`,
+        `/party/${id}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}${commQuery}`,
       );
     } catch (err: any) {
       console.error("handlePaymentSuccess error:", err);
@@ -548,7 +553,7 @@ export default function CheckoutPage() {
                         fontSize: 12,
                       }}
                     >
-                      {soldOut ? "Sold out" : `${avail} left`}
+                      {soldOut ? "Sold out" : party?.show_ticket_count ? `${avail} left` : "Available"}
                     </p>
                   </div>
                   <p

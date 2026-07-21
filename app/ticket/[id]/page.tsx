@@ -22,7 +22,7 @@ async function getTicket(id: string) {
       id, guest_name, guest_email, quantity_purchased, quantity_used,
       purchase_price, service_fee, total_paid, payment_status, purchased_at,
       ticket_tier:ticket_tiers (name),
-      party:parties (id, title, date, date_tba, location, city, flyer_url)
+      party:parties (id, title, date, date_tba, location, city, flyer_url, community_link, community_platform)
     `,
     )
     .eq("id", id)
@@ -236,6 +236,57 @@ export default async function TicketPage({ params }: PageProps) {
             ← View Event Details
           </Link>
         </div>
+
+        {party.community_link && (
+          <div
+            style={{
+              marginTop: 24,
+              background: "rgba(139,92,246,0.1)",
+              border: "1px solid rgba(139,92,246,0.3)",
+              borderRadius: 20,
+              padding: "20px 24px",
+              textAlign: "center",
+            }}
+          >
+            <p
+              style={{
+                margin: "0 0 4px",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 15,
+              }}
+            >
+              Join the Community
+            </p>
+            <p
+              style={{
+                margin: "0 0 16px",
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 13,
+              }}
+            >
+              Connect with other attendees on {party.community_platform ? party.community_platform.charAt(0).toUpperCase() + party.community_platform.slice(1) : 'the group'}.
+            </p>
+            <a
+              href={party.community_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-block",
+                background: "#8b5cf6",
+                color: "#fff",
+                padding: "10px 24px",
+                borderRadius: 24,
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 13,
+                transition: "opacity 0.2s",
+              }}
+            >
+              Join Group
+            </a>
+          </div>
+        )}
 
         <div
           style={{

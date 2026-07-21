@@ -7,11 +7,11 @@ export const metadata: Metadata = {
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ ticket?: string; party?: string }>;
+  searchParams: Promise<{ ticket?: string; party?: string; community_link?: string; community_platform?: string }>;
 }
 
 export default async function SuccessPage({ searchParams }: PageProps) {
-  const { ticket, party } = await searchParams;
+  const { ticket, party, community_link, community_platform } = await searchParams;
 
   return (
     <div
@@ -70,7 +70,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
       </p>
       <p
         style={{
-          margin: "0 0 40px",
+          margin: "0 0 32px",
           color: "#a855f7",
           fontSize: 15,
           fontWeight: 600,
@@ -79,14 +79,69 @@ export default async function SuccessPage({ searchParams }: PageProps) {
         Check your email — your QR ticket is on its way 📧
       </p>
 
+      {community_link && (
+        <div
+          style={{
+            marginBottom: 40,
+            background: "rgba(139,92,246,0.12)",
+            border: "1px solid rgba(139,92,246,0.3)",
+            borderRadius: 20,
+            padding: "24px",
+            maxWidth: 420,
+            width: "100%",
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 6px",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 16,
+            }}
+          >
+            Join the Group Chat
+          </p>
+          <p
+            style={{
+              margin: "0 0 16px",
+              color: "rgba(255,255,255,0.6)",
+              fontSize: 13,
+              lineHeight: 1.4,
+            }}
+          >
+            Connect with other attendees on {community_platform ? decodeURIComponent(community_platform) : "the group chat"}.
+          </p>
+          <a
+            href={decodeURIComponent(community_link)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              background: "#8b5cf6",
+              color: "#fff",
+              padding: "12px 32px",
+              borderRadius: 100,
+              textDecoration: "none",
+              fontWeight: 700,
+              fontSize: 14,
+              boxShadow: "0 0 24px rgba(139,92,246,0.4)",
+              transition: "all 0.2s",
+            }}
+          >
+            Join Chat Group
+          </a>
+        </div>
+      )}
+
       {ticket && (
         <Link
           href={`/ticket/${ticket}`}
           style={{
             display: "inline-block",
-            background: "rgba(139,92,246,0.12)",
-            border: "1px solid rgba(139,92,246,0.3)",
-            color: "#a855f7",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            color: "rgba(255,255,255,0.8)",
             textDecoration: "none",
             fontWeight: 600,
             fontSize: 14,
