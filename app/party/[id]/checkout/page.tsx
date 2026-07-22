@@ -44,7 +44,8 @@ const APP_FEE = 0.05;
 const PAYSTACK_CURRENCIES = ["NGN", "GHS", "USD", "ZAR", "KES", "XOF"];
 
 export default function CheckoutPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id?: string; slug?: string }>();
+  const targetIdOrSlug = params.slug || params.id || "";
   const router = useRouter();
 
   const [party, setParty] = useState<Party | null>(null);
@@ -62,40 +63,51 @@ export default function CheckoutPage() {
   const pendingRef = useRef<any>(null);
 
   useEffect(() => {
+    if (!targetIdOrSlug) return;
     async function fetchData() {
-      const [{ data: partyData }, { data: tiersData }] = await Promise.all([
-        supabase
-          .from("parties")
-          .select(
-            "id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, host_profile:host_profiles!host_profile_id(name)",
-          )
-          .eq("id", id)
-          .single(),
-        supabase
+      // Resolve party by UUID or slug
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetIdOrSlug);
+      const partyQuery = isUuid
+        ? supabase
+            .from("parties")
+            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, host_profile:host_profiles!host_profile_id(name)")
+            .eq("id", targetIdOrSlug)
+            .single()
+        : supabase
+            .from("parties")
+            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, host_profile:host_profiles!host_profile_id(name)")
+            .eq("slug", targetIdOrSlug)
+            .single();
+
+      const { data: partyData } = await partyQuery;
+
+      if (partyData) {
+        setParty(partyData as any);
+
+        // Now use the resolved party UUID to fetch tiers
+        const { data: tiersData } = await supabase
           .from("ticket_tiers")
           .select("*")
-          .eq("party_id", id)
+          .eq("party_id", partyData.id)
           .eq("is_active", true)
-          .order("tier_order"),
-      ]);
+          .order("tier_order");
 
-      if (partyData) setParty(partyData as any);
-
-      const activeTiers = (tiersData ?? []).map((t: any) => ({
-        ...t,
-        available: t.quantity - (t.quantity_sold ?? 0),
-      }));
-      setTiers(activeTiers);
-      if (activeTiers.length > 0) {
-        const firstAvailable = activeTiers.find((t: any) => t.available > 0);
-        setSelectedTierId(
-          firstAvailable ? firstAvailable.id : activeTiers[0].id,
-        );
+        const activeTiers = (tiersData ?? []).map((t: any) => ({
+          ...t,
+          available: t.quantity - (t.quantity_sold ?? 0),
+        }));
+        setTiers(activeTiers);
+        if (activeTiers.length > 0) {
+          const firstAvailable = activeTiers.find((t: any) => t.available > 0);
+          setSelectedTierId(
+            firstAvailable ? firstAvailable.id : activeTiers[0].id,
+          );
+        }
       }
       setLoading(false);
     }
     fetchData();
-  }, [id]);
+  }, [targetIdOrSlug]);
 
   const selectedTier = tiers.find((t) => t.id === selectedTierId) as any;
   const available = selectedTier
@@ -133,7 +145,7 @@ export default function CheckoutPage() {
         "create-guest-ticket",
         {
           body: {
-            partyId: id,
+            partyId: party.id,
             tierId: p.tierId,
             quantity,
             guestEmail: guestEmail.toLowerCase().trim(),
@@ -159,7 +171,7 @@ export default function CheckoutPage() {
         : "";
 
       router.push(
-        `/party/${id}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}${commQuery}`,
+        `/${targetIdOrSlug}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}${commQuery}`,
       );
     } catch (err: any) {
       console.error("handlePaymentSuccess error:", err);
@@ -208,7 +220,7 @@ export default function CheckoutPage() {
       ref: `TKW_${Date.now()}_${Math.floor(Math.random() * 9999)}`,
       channels: ["card", "bank_transfer", "ussd", "mobile_money", "bank"],
       metadata: {
-        party_id: id,
+        party_id: party!.id,
         party_title: party!.title,
         tier_id: selectedTierId,
         tier_name: selectedTier?.name,

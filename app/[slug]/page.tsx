@@ -1,24 +1,32 @@
+/**
+ * Top-level dynamic route: thesceneapp.online/[slug]
+ *
+ * Renders party pages at ultra-short URLs like:
+ *   thesceneapp.online/beach-bash
+ *   thesceneapp.online/summer-vibes-2026
+ *
+ * Static routes (browse, party, download, ticket, faq, support,
+ * privacy-policy, terms-of-service, email-confirmed, reset-password)
+ * always take precedence over this dynamic route in Next.js.
+ */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { cache } from "react";
 import PartyImage from "@/components/PartyImage";
 
-// Always fetch fresh — host settings like show_ticket_count must reflect immediately
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
-// cache() deduplicates calls within the same request — generateMetadata and
-// PartyPage both call this but it only hits Supabase once.
-const getParty = cache(async (idOrSlug: string) => {
-  // Detect UUID vs slug — UUIDs are 36 chars with hyphens at specific positions
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+const getPartyBySlug = cache(async (slug: string) => {
+  // Detect UUID vs slug — UUIDs match the standard 8-4-4-4-12 format
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
   let query = supabase
     .from("parties")
@@ -37,13 +45,12 @@ const getParty = cache(async (idOrSlug: string) => {
     .eq("is_published", true);
 
   if (isUuid) {
-    query = query.eq("id", idOrSlug);
+    query = query.eq("id", slug);
   } else {
-    query = query.eq("slug", idOrSlug);
+    query = query.eq("slug", slug);
   }
 
   const { data, error } = await query.single();
-
   if (error || !data) return null;
   return data;
 });
@@ -82,7 +89,6 @@ function resolveImages(party: any): {
   return { primary: null, fallback: null };
 }
 
-// For OG/metadata we just need one URL — prefer flyer, fallback to media
 function resolveImage(party: any): string | null {
   return resolveImages(party).primary;
 }
@@ -108,8 +114,8 @@ function formatDateTime(dateString: string | null) {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { id } = await params;
-  const party = await getParty(id);
+  const { slug } = await params;
+  const party = await getPartyBySlug(slug);
   if (!party) return { title: "Event Not Found — TheScene" };
   const image = resolveImage(party);
   return {
@@ -123,17 +129,13 @@ export async function generateMetadata({
   };
 }
 
-export default async function PartyPage({ params }: PageProps) {
-  const { id } = await params;
-  const party = await getParty(id);
+export default async function SlugPartyPage({ params }: PageProps) {
+  const { slug } = await params;
+  const party = await getPartyBySlug(slug);
   if (!party) notFound();
 
-  // Redirect legacy /party/... URLs to canonical ultra-short top-level URL
-  if ((party as any).slug) {
-    redirect(`/${(party as any).slug}`);
-  }
-
-  const partyPath = (party as any).slug ?? party.id;
+  // The canonical path uses slug; fall back to party id
+  const partyPath = party.slug ?? party.id;
 
   const { primary: imageUrl, fallback: imageFallback } = resolveImages(party);
   const symbol =
@@ -417,7 +419,7 @@ export default async function PartyPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Community Link / WhatsApp Banner (Informs guest users) */}
+        {/* Community Link */}
         {party.community_link && (
           <div
             className="glass"

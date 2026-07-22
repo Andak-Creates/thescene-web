@@ -3,6 +3,7 @@ import PartyImage from "@/components/PartyImage";
 
 interface Party {
   id: string;
+  slug?: string | null;
   title: string;
   date: string | null;
   date_tba: boolean;
@@ -75,7 +76,7 @@ export default function EventCard({ party }: { party: Party }) {
 
   return (
     <Link
-      href={`/party/${party.id}`}
+      href={`/${party.slug || party.id}`}
       style={{ textDecoration: "none", display: "block" }}
     >
       <div
