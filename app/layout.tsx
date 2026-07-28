@@ -58,6 +58,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        {/* Preconnect to external domains to reduce DNS & TLS handshake latency */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://js.paystack.co" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://js.paystack.co" />
+      </head>
       <body
         suppressHydrationWarning
         className={`${syne.variable} ${dmSans.variable} font-body antialiased bg-theme-bg text-theme-white`}

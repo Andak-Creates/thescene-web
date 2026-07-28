@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import Image from "next/image";
 
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { cache } from "react";
-import PartyImage from "@/components/PartyImage";
+import { getOptimizedImageUrl } from "@/lib/media";
 
 // Always fetch fresh — host settings like show_ticket_count must reflect immediately
 export const dynamic = "force-dynamic";
@@ -58,11 +59,17 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   ZAR: "R",
 };
 
+function isVideoUrl(url: string | null): boolean {
+  if (!url) return false;
+  const l = url.toLowerCase();
+  return l.endsWith('.mp4') || l.endsWith('.mov') || l.endsWith('.webm') || l.includes('/video/upload/');
+}
+
 function resolveImages(party: any): {
   primary: string | null;
   fallback: string | null;
 } {
-  const flyerUrl: string | null = party.flyer_url ?? null;
+  const flyerUrl: string | null = party.flyer_url && !isVideoUrl(party.flyer_url) ? party.flyer_url : null;
   let mediaUrl: string | null = null;
   if (party.media?.length > 0) {
     const sorted = [...party.media].sort((a: any, b: any) => {
@@ -70,11 +77,13 @@ function resolveImages(party: any): {
       if (b.is_primary) return 1;
       return (a.display_order ?? 0) - (b.display_order ?? 0);
     });
-    const first = sorted[0];
-    mediaUrl =
-      first.media_type === "video"
-        ? (first.thumbnail_url ?? null)
-        : first.media_url;
+    for (const item of sorted) {
+      const candidate = item.media_type === "video" ? (item.thumbnail_url ?? null) : item.media_url;
+      if (candidate && !isVideoUrl(candidate)) {
+        mediaUrl = candidate;
+        break;
+      }
+    }
   }
   if (flyerUrl && mediaUrl) return { primary: flyerUrl, fallback: mediaUrl };
   if (flyerUrl) return { primary: flyerUrl, fallback: null };
@@ -135,7 +144,7 @@ export default async function PartyPage({ params }: PageProps) {
 
   const partyPath = (party as any).slug ?? party.id;
 
-  const { primary: imageUrl, fallback: imageFallback } = resolveImages(party);
+  const { primary: imageUrl } = resolveImages(party);
   const symbol =
     CURRENCY_SYMBOLS[party.currency_code] ?? party.currency_code + " ";
   const dt = formatDateTime(party.date);
@@ -159,36 +168,153 @@ export default async function PartyPage({ params }: PageProps) {
       ? Math.min(...activeTiers.map((t: any) => t.price))
       : null;
 
+  // Build the Google Maps URL from whatever location fields are available
+  const locationParts = [
+    party.location,
+    party.city,
+    (party as any).state,
+    (party as any).country,
+  ].filter(Boolean);
+  const fullLocation = locationParts.join(", ");
+  const mapsUrl = fullLocation
+    ? `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}`
+    : null;
+
+  // Optimised URL for the blurred background (lower quality is fine, it's blurred)
+  const bgImageUrl = imageUrl
+    ? getOptimizedImageUrl(imageUrl, 800) ?? imageUrl
+    : null;
+
   return (
     <div style={{ minHeight: "100vh", paddingBottom: 100 }}>
-      {/* Hero Image */}
-      <div className="relative w-full overflow-hidden bg-white/5 md:max-h-[520px] h-[50vh] md:h-auto md:aspect-video">
-        {imageUrl ? (
-          <PartyImage
-            src={imageUrl}
-            fallbackSrc={imageFallback}
-            alt={party.title}
-            sizes="100vw"
-            priority
-            style={{ objectFit: "cover" }}
+      {/* ── Hero: blurred background + flyer card floating on top ── */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          minHeight: 480,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          paddingTop: 110,
+          paddingBottom: 10,
+          overflow: "hidden",
+        }}
+      >
+        {/* Blurred background layer */}
+        {bgImageUrl ? (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url("${bgImageUrl}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "blur(15px) brightness(0.68) saturate(1.45)",
+              transform: "scale(1.1)",
+              zIndex: 0,
+            }}
           />
         ) : (
-          <div className="flex items-center justify-center text-8xl opacity-15 h-full">
-            🎉
-          </div>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(180deg, #1a0d2e 0%, #0b0514 100%)",
+              zIndex: 0,
+            }}
+          />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(10,0,16,0.1)] to-[rgba(10,0,16,0.8)]" />
+
+        {/* Gradient overlay so content below blends nicely */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "50%",
+            background: "linear-gradient(to bottom, transparent, #0b0514)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Floating flyer card */}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            marginTop: 20,
+            marginBottom: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          {imageUrl ? (
+            <div
+              style={{
+                width: "min(340px, 78vw)",
+                aspectRatio: "3/4",
+                borderRadius: 20,
+                overflow: "hidden",
+                boxShadow:
+                  "0 12px 60px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.1), 0 0 90px rgba(139,92,246,0.3)",
+                position: "relative",
+              }}
+            >
+              <Image
+                src={getOptimizedImageUrl(imageUrl, 800) ?? imageUrl}
+                alt={party.title}
+                fill
+                sizes="(max-width: 640px) 78vw, 340px"
+                priority
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+          ) : (
+            <div
+              style={{
+                width: "min(280px, 72vw)",
+                aspectRatio: "3/4",
+                borderRadius: 20,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 64,
+              }}
+            >
+              🎉
+            </div>
+          )}
+        </div>
+
+        {/* Extra bottom fade so hero blends into page bg */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: -1,
+            left: 0,
+            right: 0,
+            height: 80,
+            background: "linear-gradient(to bottom, transparent, #0b0514)",
+            zIndex: 3,
+          }}
+        />
       </div>
 
       {/* Content */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-        {/* Title card */}
+        {/* Title card — sits just below the hero */}
         <div
           style={{
-            marginTop: "-60px",
             position: "relative",
             zIndex: 10,
-            marginBottom: 32,
+            marginTop: 28,
+            marginBottom: 24,
           }}
         >
           <div
@@ -263,21 +389,6 @@ export default async function PartyPage({ params }: PageProps) {
                   📅 Date TBA
                 </span>
               )}
-              {!party.location_tba && party.location && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: 100,
-                    padding: "6px 14px",
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: 13,
-                  }}
-                >
-                  📍 {party.location}
-                  {party.city ? `, ${party.city}` : ""}
-                </span>
-              )}
               {party.dress_code && (
                 <span
                   style={{
@@ -310,6 +421,83 @@ export default async function PartyPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        {/* Location banner — tappable, opens Google Maps */}
+        {!party.location_tba && fullLocation && mapsUrl && (
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none", display: "block", marginBottom: 24 }}
+          >
+            <div
+              className="glass"
+              style={{
+                borderRadius: 20,
+                padding: "18px 22px",
+                border: "1px solid rgba(255,255,255,0.08)",
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                cursor: "pointer",
+                transition: "border-color 0.2s, background 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(139,92,246,0.35)";
+                (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.06)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                (e.currentTarget as HTMLElement).style.background = "transparent";
+              }}
+            >
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  background: "rgba(139,92,246,0.12)",
+                  border: "1px solid rgba(139,92,246,0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 20,
+                  flexShrink: 0,
+                }}
+              >
+                📍
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  style={{
+                    margin: "0 0 3px",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: 15,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {fullLocation}
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "rgba(139,92,246,0.8)",
+                    fontSize: 12,
+                    fontWeight: 500,
+                  }}
+                >
+                  Tap to view in Google Maps
+                </p>
+              </div>
+              <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 18, flexShrink: 0 }}>
+                ›
+              </div>
+            </div>
+          </a>
+        )}
 
         {/* Description */}
         {party.description && (
@@ -417,7 +605,7 @@ export default async function PartyPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Community Link / WhatsApp Banner (Informs guest users) */}
+        {/* Community Link / WhatsApp Banner */}
         {party.community_link && (
           <div
             className="glass"
@@ -510,33 +698,15 @@ export default async function PartyPage({ params }: PageProps) {
                         {tier.name}
                       </p>
                       {soldOut ? (
-                        <p
-                          style={{
-                            margin: 0,
-                            color: "rgba(255,255,255,0.4)",
-                            fontSize: 12,
-                          }}
-                        >
+                        <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
                           Sold out
                         </p>
                       ) : party.show_ticket_count ? (
-                        <p
-                          style={{
-                            margin: 0,
-                            color: "rgba(255,255,255,0.4)",
-                            fontSize: 12,
-                          }}
-                        >
+                        <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
                           {available} available
                         </p>
                       ) : (
-                        <p
-                          style={{
-                            margin: 0,
-                            color: "rgba(255,255,255,0.4)",
-                            fontSize: 12,
-                          }}
-                        >
+                        <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
                           Available
                         </p>
                       )}
@@ -584,23 +754,10 @@ export default async function PartyPage({ params }: PageProps) {
           }}
         >
           <div>
-            <p
-              style={{
-                margin: 0,
-                color: "rgba(255,255,255,0.5)",
-                fontSize: 12,
-              }}
-            >
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.5)", fontSize: 12 }}>
               Starting from
             </p>
-            <p
-              style={{
-                margin: 0,
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: 20,
-              }}
-            >
+            <p style={{ margin: 0, color: "#fff", fontWeight: 800, fontSize: 20 }}>
               {minPrice === 0
                 ? "Free"
                 : `${symbol}${minPrice?.toLocaleString()}`}

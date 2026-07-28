@@ -105,3 +105,11 @@ h6 {
 .animate-fade-in {
   animation: fadeInUp 0.4s ease both;
 }
+
+.location-banner {
+  transition: border-color 0.2s, background 0.2s;
+}
+.location-banner:hover {
+  border-color: rgba(139, 92, 246, 0.35) !important;
+  background: rgba(139, 92, 246, 0.06) !important;
+}

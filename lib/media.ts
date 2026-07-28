@@ -3,6 +3,17 @@
  */
 export function getOptimizedImageUrl(url: string | null, width?: number) {
   if (!url) return null;
+
+  // Don't treat video files as images
+  const lowerUrl = url.toLowerCase();
+  if (
+    lowerUrl.endsWith('.mp4') ||
+    lowerUrl.endsWith('.mov') ||
+    lowerUrl.endsWith('.webm') ||
+    lowerUrl.includes('/video/upload/')
+  ) {
+    return null;
+  }
   
   // If it's not a Cloudinary URL, return as is
   if (!url.includes('res.cloudinary.com')) return url;
