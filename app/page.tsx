@@ -2,7 +2,7 @@ import { AOSInit } from "@/components/AOSInit";
 import Hero from "@/components/sections/Hero";
 import TwoAudiences from "@/components/sections/TwoAudiences";
 import HowItWorks from "@/components/sections/HowItWorks";
-import Features from "@/components/sections/Features";
+
 import ForHosts from "@/components/sections/ForHosts";
 import FinalCTA from "@/components/sections/FinalCTA";
 import Footer from "@/components/Footer";
@@ -15,7 +15,6 @@ export default function Home() {
       <Hero />
       <TwoAudiences />
       <HowItWorks />
-      <Features />
       <ForHosts />
       <FinalCTA />
       <Footer />

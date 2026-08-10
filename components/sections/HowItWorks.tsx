@@ -1,16 +1,17 @@
 import React from "react";
 import Section from "../Section";
-import StepCard from "../StepCard";
+
+import FeatureCard from "../FeatureCard";
 
 const HowItWorks = () => {
-  const attendeeSteps = [
+  const partyGoerFeatures = [
     {
-      title: "Download TheScene",
+      title: "Discover Events Near You",
       description:
-        "Get the app on iOS or Android. Discover the hottest parties, clubs, and events in your city, all in one place.",
+        "Parties, concerts, and everything in between, sorted by vibe, genre, or how close it is to you. No more digging through five different group chats to find out what's happening this weekend.",
       icon: (
         <svg
-          className="w-10 h-10"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -19,38 +20,24 @@ const HowItWorks = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M12 18.5a6.5 6.5 0 100-13 6.5 6.5 0 000 13zM12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
           />
-        </svg>
-      ),
-    },
-    {
-      title: "Discover & Browse Events",
-      description:
-        "Browse through curated events near you. Filter by city, genre, or date find exactly what matches your energy.",
-      icon: (
-        <svg
-          className="w-10 h-10"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
           />
         </svg>
       ),
     },
     {
-      title: "Get Your Ticket",
+      title: "Tickets & Table Reservations",
       description:
-        "Secure your spot in seconds. Buy tickets or reserve tables, pay locally via Paystack, and get your ticket delivered instantly.",
+        'General admission, VIP, or a full table, all in one checkout. Your ticket lands in your phone the second you pay. No screenshots, no printing, no "can you resend the receipt."',
       icon: (
         <svg
-          className="w-10 h-10"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -64,32 +51,70 @@ const HowItWorks = () => {
         </svg>
       ),
     },
+    {
+      title: "Digital QR Access",
+      description:
+        "Your ticket lands straight in your email and inside the app the second you pay. Just show your QR code at the door for instant entry—no printing needed.",
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+          />
+        </svg>
+      ),
+    },
   ];
 
   return (
-    <Section id="how-it-works" className="bg-theme-surface">
-      <div data-aos="fade-up" className="text-center mb-20">
-        <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">
-          How It <span className="text-theme-purple">Works</span>
+    <Section id="how-it-works" className="bg-theme-bg">
+      {/* Value Prop Framing */}
+      <div data-aos="fade-up" className="max-w-3xl mx-auto text-center mb-16">
+        <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-6 leading-tight">
+          Everything about going out, <br />
+          <span className="text-theme-purple">in one place.</span>
         </h2>
-        <p className="text-theme-muted max-w-2xl mx-auto">
-          From discovery to the door, TheScene makes the entire experience
-          effortless, for both attendees and hosts.
+        <p className="text-lg text-theme-muted mb-8 max-w-xl mx-auto">
+          Instead of finding events on Instagram, DMing for tickets, sending
+          bank transfers, saving screenshots, and showing them at the door...
         </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 text-sm font-semibold text-white/80 uppercase tracking-widest">
+          <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10">
+            Discover
+          </span>
+          <span className="text-theme-purple">&rarr;</span>
+          <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10">
+            Buy
+          </span>
+          <span className="text-theme-purple">&rarr;</span>
+          <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10">
+            Store
+          </span>
+          <span className="text-theme-purple">&rarr;</span>
+          <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10">
+            Check in
+          </span>
+        </div>
       </div>
 
+      {/* For Party-Goers Block */}
       <div className="relative">
-        {/* Connection Line (Desktop) */}
-        <div className="hidden lg:block absolute top-10 left-1/4 right-1/4 h-0.5 border-t border-dashed border-theme-purple/30 z-0"></div>
+        <div className="absolute top-1/2 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative z-10">
-          {attendeeSteps.map((step, index) => (
-            <div key={index} data-aos="fade-up" data-aos-delay={index * 200}>
-              <StepCard
-                number={index + 1}
-                title={step.title}
-                description={step.description}
-                icon={step.icon}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+          {partyGoerFeatures.map((feature, index) => (
+            <div key={index} data-aos="fade-up" data-aos-delay={index * 100}>
+              <FeatureCard
+                title={feature.title}
+                description={feature.description}
+                icon={feature.icon}
               />
             </div>
           ))}
