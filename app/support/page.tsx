@@ -44,7 +44,7 @@ export default function Support() {
                         ) as HTMLTextAreaElement
                       ).value;
                       const subject = encodeURIComponent(
-                        `TheScene Support — ${name}`,
+                        `TheScene Support: ${name}`,
                       );
                       const body = encodeURIComponent(
                         `Name: ${name}\nEmail: ${email}\n\n${message}`,

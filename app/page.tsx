@@ -1,21 +1,23 @@
 import { AOSInit } from "@/components/AOSInit";
 import Hero from "@/components/sections/Hero";
-import Features from "@/components/sections/Features";
+import TwoAudiences from "@/components/sections/TwoAudiences";
 import HowItWorks from "@/components/sections/HowItWorks";
+import Features from "@/components/sections/Features";
 import ForHosts from "@/components/sections/ForHosts";
-import Pricing from "@/components/sections/Pricing";
+import FinalCTA from "@/components/sections/FinalCTA";
 import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
     <main className="min-h-screen">
-      {/* AOS only needed on the landing page — not loaded on party/browse pages */}
+      {/* AOS only needed on the landing page, not loaded on party/browse pages */}
       <AOSInit />
       <Hero />
-      <Features />
+      <TwoAudiences />
       <HowItWorks />
+      <Features />
       <ForHosts />
-      <Pricing />
+      <FinalCTA />
       <Footer />
     </main>
   );

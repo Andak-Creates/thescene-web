@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: "Your Ticket — TheScene",
+  title: "Your Ticket | TheScene",
 };
 
 async function getTicket(id: string) {
@@ -20,9 +20,9 @@ async function getTicket(id: string) {
     .select(
       `
       id, guest_name, guest_email, quantity_purchased, quantity_used,
-      purchase_price, service_fee, total_paid, payment_status, purchased_at,
-      ticket_tier:ticket_tiers (name),
-      party:parties (id, title, date, date_tba, location, city, flyer_url, community_link, community_platform)
+      purchase_price, service_fee, total_paid, payment_status, purchased_at, claim_token,
+      ticket_tier:ticket_tiers (name, tier_type, table_capacity),
+      party:parties (id, title, date, date_tba, location, city, flyer_url, community_link, community_platform, slug)
     `,
     )
     .eq("id", id)
@@ -236,6 +236,45 @@ export default async function TicketPage({ params }: PageProps) {
             ← View Event Details
           </Link>
         </div>
+
+        {tier?.tier_type === "table" && ticket.claim_token && (
+          <div
+            style={{
+              marginTop: 24,
+              background: "rgba(139,92,246,0.1)",
+              border: "1px solid rgba(139,92,246,0.3)",
+              borderRadius: 20,
+              padding: "20px 24px",
+              textAlign: "center",
+            }}
+          >
+            <p style={{ margin: "0 0 8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>
+              Share with your guests
+            </p>
+            <p style={{ margin: "0 0 16px", color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.4 }}>
+              Your table holds up to {(tier as any).table_capacity || "several"} guests. Have them open this link to claim their seat and get their own QR code to enter.
+            </p>
+            <div
+              style={{
+                background: "rgba(0,0,0,0.4)",
+                borderRadius: 10,
+                padding: "12px",
+                wordBreak: "break-all",
+                marginBottom: 16,
+              }}
+            >
+              <a
+                href={`https://thesceneapp.online/${(party as any).slug || party.id}/claim-table/${ticket.claim_token}`}
+                style={{ color: "#c084fc", textDecoration: "none", fontSize: 13, fontWeight: 600, fontFamily: "monospace" }}
+              >
+                {`https://thesceneapp.online/${(party as any).slug || party.id}/claim-table/${ticket.claim_token}`}
+              </a>
+            </div>
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+              Copy the link above and send it to your guests.
+            </p>
+          </div>
+        )}
 
         {party.community_link && (
           <div

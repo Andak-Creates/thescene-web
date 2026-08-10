@@ -1,9 +1,8 @@
 import React from "react";
-import Button from "../Button";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center pt-32 overflow-hidden">
+    <section className="relative min-h-[85vh] flex items-center justify-center pt-32 pb-20 md:pb-28 overflow-hidden">
       {/* Subtle Background Gradient */}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(147,51,234,0.08),transparent_50%)]"></div>
 
@@ -13,7 +12,7 @@ const Hero = () => {
           data-aos-delay="100"
           className="text-4xl md:text-8xl font-heading font-extrabold text-white mb-8 leading-[1.1] tracking-tighter"
         >
-          Your Next Party <br />{" "}
+          Your Next Event <br />{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-purple to-purple-400">
             Starts Here
           </span>
@@ -23,7 +22,7 @@ const Hero = () => {
           data-aos-delay="200"
           className="text-lg md:text-xl text-theme-muted mb-12 max-w-2xl mx-auto leading-relaxed font-medium"
         >
-          The ultimate platform for discovering the hottest parties and securing
+          The ultimate platform for discovering the hottest events and securing
           your tickets instantly. Seamless, secure, and always on.
         </p>
 
@@ -89,13 +88,12 @@ const Hero = () => {
               </div>
             </a>
           </div>
-          <Button
-            href="/#how-it-works"
-            variant="ghost"
-            className="text-sm font-medium pt-2"
+          <a
+            href="https://soso.thesceneapp.online"
+            className="text-sm font-medium pt-2 text-white hover:text-theme-purple transition-colors"
           >
-            Learn how it works &rarr;
-          </Button>
+            Hosting an event? Open Host Dashboard &rarr;
+          </a>
         </div>
       </div>
     </section>

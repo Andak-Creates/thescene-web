@@ -13,44 +13,25 @@ const ForHosts = () => {
             <span className="text-theme-purple">The Next Level</span>
           </h2>
           <p className="text-theme-muted text-lg mb-8 leading-relaxed">
-            TheScene isn&apos;t just for party-goers. We provide hosts with
-            state-of-the-art tools to manage ticketing, track attendance in
-            real-time, and grow their community.
+            TheScene isn&apos;t just for party-goers. Hosts get a professional
+            command centre, <strong className="text-white">Soso</strong>, to
+            manage ticketing, track revenue, and grow their community, whether
+            you&apos;re running a club night or a corporate conference.
           </p>
 
-          <div className="bg-theme-purple/10 border border-theme-purple/20 rounded-2xl p-6 mb-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-theme-purple/20 rounded-full blur-[40px] -mr-16 -mt-16"></div>
-            <div className="relative z-10 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-theme-purple/20 flex items-center justify-center flex-shrink-0 text-theme-purple font-bold text-lg">
-                🎉
-              </div>
-              <div>
-                <h4 className="font-heading font-bold text-white text-lg mb-1">
-                  Special Launch Offer
-                </h4>
-                <p className="text-theme-muted text-sm leading-relaxed">
-                  Hosts get{" "}
-                  <span className="text-theme-purple font-semibold">
-                    100% of revenue
-                  </span>{" "}
-                  from May to August, while attendees only pay a{" "}
-                  <span className="text-theme-purple font-semibold">
-                    5% fee
-                  </span>{" "}
-                  for tickets.
-                </p>
-              </div>
-            </div>
-          </div>
+
 
           <ul className="space-y-4 mb-10">
             {[
-              "Advanced analytics for ticket sales",
-              "Seamless door check-in tools",
-              "Direct communication with your guests",
+              "Private events, shareable by direct link only",
+              "Downloadable event reports & guest lists (PDF & CSV)",
+              "Table reservations with per-seat claim management",
+              "Real-time door check-in with QR code scanning",
+              "Advanced analytics, revenue tracking, and earnings payouts",
+              "Executive Concierge Pass for complimentary VIP guests",
             ].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-white">
-                <div className="w-5 h-5 rounded-full bg-theme-purple/20 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-theme-purple/20 flex items-center justify-center shrink-0">
                   <svg
                     className="w-3 h-3 text-theme-purple"
                     fill="currentColor"
@@ -68,9 +49,14 @@ const ForHosts = () => {
             ))}
           </ul>
 
-          <Button href="/download" variant="primary" className="px-10">
-            Download to Host
-          </Button>
+          <div className="flex flex-wrap gap-4">
+            <Button href="https://soso.thesceneapp.online" variant="primary" className="px-10">
+              Launch Soso Dashboard
+            </Button>
+            <Button href="/download" variant="secondary" className="px-8">
+              Download TheScene App
+            </Button>
+          </div>
         </div>
 
         <div
@@ -96,10 +82,10 @@ const ForHosts = () => {
                   Overview
                 </span>
                 <span className="text-white/40 font-medium text-[10px] pb-1 px-1">
-                  Attendees
+                  Guest List
                 </span>
                 <span className="text-white/40 font-medium text-[10px] pb-1 px-1">
-                  Timeline
+                  Reports
                 </span>
               </div>
 
@@ -156,56 +142,33 @@ const ForHosts = () => {
                   </div>
                 </div>
 
-                {/* View Analytics - Half Pie Chart */}
+                {/* Export row */}
                 <div className="bg-white/5 rounded-xl p-3 border border-white/5">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-3">
                     <h5 className="text-white/60 text-[9px] font-bold uppercase tracking-wider">
-                      View Analytics
+                      Export Reports
                     </h5>
-                    <span className="text-white font-black text-[11px]">
-                      19
-                    </span>
                   </div>
-
-                  <div className="relative h-20 flex items-center justify-center overflow-hidden">
-                    {/* Semi-Circle Gauge */}
-                    <div className="absolute top-4 w-32 h-32 rounded-full border-[10px] border-blue-500/20"></div>
-                    <div
-                      className="absolute top-4 w-32 h-32 rounded-full border-[10px] border-transparent"
-                      style={{
-                        background:
-                          "conic-gradient(from 180deg at 50% 50%, #7C3AED 0deg, #7C3AED 30deg, #3B82F6 30deg, #3B82F6 180deg, transparent 180deg)",
-                        WebkitMaskImage:
-                          "radial-gradient(transparent 52px, black 53px)",
-                        maskImage:
-                          "radial-gradient(transparent 52px, black 53px)",
-                        clipPath: "inset(0 0 50% 0)",
-                      }}
-                    ></div>
-
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
-                      <span className="text-lg font-black text-white">16%</span>
-                      <span className="text-[8px] text-white/40 uppercase font-bold">
-                        Followers
-                      </span>
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-theme-purple/20 border border-theme-purple/30 rounded-lg py-1.5 text-center text-[8px] font-bold text-theme-purple">
+                      PDF
+                    </div>
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-lg py-1.5 text-center text-[8px] font-bold text-white/50">
+                      CSV
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex flex-col gap-1.5 mt-2">
-                    <div className="flex items-center justify-between text-[8px]">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-theme-purple"></div>
-                        <span className="text-white/60">Followers</span>
-                      </div>
-                      <span className="text-white font-bold">15.8% (3)</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[8px]">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                        <span className="text-white/60">Non-Followers</span>
-                      </div>
-                      <span className="text-white font-bold">84.2% (16)</span>
-                    </div>
+                {/* Private event badge */}
+                <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-theme-purple/20 flex items-center justify-center shrink-0">
+                    <svg className="w-3 h-3 text-theme-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-bold text-white">Private Event</p>
+                    <p className="text-[8px] text-white/40">Link-only access</p>
                   </div>
                 </div>
               </div>
@@ -213,7 +176,7 @@ const ForHosts = () => {
               {/* Hover Overlay */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-[4px] bg-theme-bg/40">
                 <span className="bg-theme-purple text-white px-5 py-2 rounded-xl text-[10px] font-bold shadow-2xl shadow-theme-purple/40">
-                  Get Host App
+                  Open Soso Dashboard
                 </span>
               </div>
             </div>

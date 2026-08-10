@@ -4,7 +4,7 @@ import Link from 'next/link';
 interface ButtonProps {
   children: React.ReactNode;
   href?: string;
-  variant?: 'primary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'outline' | 'ghost' | 'secondary';
   className?: string;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
@@ -23,6 +23,7 @@ const Button = ({
   const variants = {
     primary: "bg-theme-purple text-white hover:brightness-110 active:scale-95",
     outline: "border border-theme-border text-white hover:bg-white/5 active:scale-95",
+    secondary: "border border-theme-border text-white hover:bg-white/5 active:scale-95",
     ghost: "text-theme-muted hover:text-white transition-colors"
   };
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Button from './Button';
 
 const Navbar = () => {
@@ -18,8 +19,8 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Browse Events', href: '/browse' },
-    { name: 'Features', href: '/#features' },
     { name: 'How It Works', href: '/#how-it-works' },
+    { name: 'Features', href: '/#features' },
     { name: 'For Hosts', href: '/#for-hosts' },
     { name: 'FAQ', href: '/faq' },
   ];
@@ -27,8 +28,14 @@ const Navbar = () => {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-theme-bg/80 backdrop-blur-md border-b border-theme-border ${isScrolled ? 'py-4' : 'py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold font-heading text-theme-purple tracking-tighter">
-          TheScene
+        <Link href="/" className="flex items-center h-10 overflow-hidden relative w-32" aria-label="TheScene">
+          <Image 
+            src="/thescenne-logo-transparent.png" 
+            alt="TheScene Logo" 
+            width={192}
+            height={48}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 max-w-none" 
+          />
         </Link>
 
         {/* Desktop Nav */}

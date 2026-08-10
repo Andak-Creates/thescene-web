@@ -2,17 +2,231 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Booking Confirmed — TheScene",
+  title: "Booking Confirmed | TheScene",
 };
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ ticket?: string; party?: string; community_link?: string; community_platform?: string }>;
+  searchParams: Promise<{
+    ticket?: string;
+    party?: string;
+    community_link?: string;
+    community_platform?: string;
+    is_table?: string;
+    claim_token?: string;
+    table_name?: string;
+    table_capacity?: string;
+  }>;
 }
 
-export default async function SuccessPage({ searchParams }: PageProps) {
-  const { ticket, party, community_link, community_platform } = await searchParams;
+export default async function SuccessPage({ params, searchParams }: PageProps) {
+  const { id: partyIdOrSlug } = await params;
+  const {
+    ticket,
+    party,
+    community_link,
+    community_platform,
+    is_table,
+    claim_token,
+    table_name,
+    table_capacity,
+  } = await searchParams;
 
+  const isTablePurchase = is_table === "1" && !!claim_token;
+  const claimLink = isTablePurchase
+    ? `https://thesceneapp.online/${partyIdOrSlug}/claim-table/${claim_token}`
+    : null;
+  const capacityNum = table_capacity ? parseInt(table_capacity) : null;
+
+  // ── TABLE PURCHASE VIEW ──────────────────────────────────────────────────
+  if (isTablePurchase) {
+    return (
+      <div
+        style={{
+          minHeight: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "120px 24px 60px",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 88,
+            height: 88,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #7C3AED, #a855f7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 40,
+            marginBottom: 28,
+            boxShadow: "0 0 60px rgba(139,92,246,0.45)",
+          }}
+        >
+          🪑
+        </div>
+
+        <h1
+          style={{
+            margin: "0 0 10px",
+            color: "#fff",
+            fontSize: "clamp(26px, 5vw, 38px)",
+            fontWeight: 900,
+            letterSpacing: "-0.5px",
+          }}
+        >
+          Table Secured!
+        </h1>
+
+        <p
+          style={{
+            margin: "0 0 6px",
+            color: "rgba(255,255,255,0.6)",
+            fontSize: 16,
+            maxWidth: 440,
+            lineHeight: 1.6,
+          }}
+        >
+          {table_name
+            ? `You've purchased the "${decodeURIComponent(table_name)}"${party ? ` at "${decodeURIComponent(party)}"` : ""}.`
+            : party
+              ? `Your table at "${decodeURIComponent(party)}" is confirmed.`
+              : "Your table is confirmed."}
+        </p>
+
+        {capacityNum && (
+          <p
+            style={{
+              margin: "0 0 32px",
+              color: "#a855f7",
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Your table holds up to {capacityNum} guest{capacityNum !== 1 ? "s" : ""}. Your QR code is on its way to your email 📧
+          </p>
+        )}
+
+        {/* Claim link card */}
+        <div
+          style={{
+            background: "rgba(139,92,246,0.08)",
+            border: "1px solid rgba(139,92,246,0.3)",
+            borderRadius: 24,
+            padding: "28px 28px 24px",
+            maxWidth: 480,
+            width: "100%",
+            marginBottom: 24,
+          }}
+        >
+          <p style={{ margin: "0 0 6px", color: "#fff", fontWeight: 800, fontSize: 17 }}>
+            Share this link with your guests
+          </p>
+          <p style={{ margin: "0 0 18px", color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.5 }}>
+            Each guest opens this link, enters their name and email, and gets
+            their own QR code to enter the event.{" "}
+            {capacityNum
+              ? `Up to ${capacityNum - 1} friend${capacityNum - 1 !== 1 ? "s" : ""} can claim a seat (your own QR counts as 1).`
+              : ""}
+          </p>
+
+          {/* URL display */}
+          <div
+            style={{
+              background: "rgba(0,0,0,0.3)",
+              border: "1px solid rgba(139,92,246,0.2)",
+              borderRadius: 12,
+              padding: "12px 16px",
+              marginBottom: 14,
+              wordBreak: "break-all",
+              textAlign: "left",
+            }}
+          >
+            <p style={{ margin: "0 0 4px", color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Your Claim Link
+            </p>
+            <p style={{ margin: 0, color: "#c084fc", fontSize: 13, fontFamily: "monospace" }}>
+              {claimLink}
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`You're invited! Claim your seat at our table: ${claimLink}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                flex: 1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                background: "#25D366",
+                color: "#fff",
+                textDecoration: "none",
+                fontWeight: 700,
+                fontSize: 14,
+                padding: "12px 16px",
+                borderRadius: 100,
+              }}
+            >
+              📲 WhatsApp
+            </a>
+            <a
+              href={claimLink ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                flex: 1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(139,92,246,0.15)",
+                border: "1px solid rgba(139,92,246,0.3)",
+                color: "#c084fc",
+                textDecoration: "none",
+                fontWeight: 700,
+                fontSize: 14,
+                padding: "12px 16px",
+                borderRadius: 100,
+              }}
+            >
+              Open Link →
+            </a>
+          </div>
+        </div>
+
+        {ticket && (
+          <Link
+            href={`/ticket/${ticket}`}
+            style={{
+              display: "inline-block",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "rgba(255,255,255,0.7)",
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: 14,
+              padding: "12px 28px",
+              borderRadius: 100,
+              marginBottom: 40,
+            }}
+          >
+            View My QR Ticket →
+          </Link>
+        )}
+
+        <Link href="/browse" style={{ color: "rgba(255,255,255,0.25)", fontSize: 14, textDecoration: "none" }}>
+          Browse more events →
+        </Link>
+      </div>
+    );
+  }
+
+  // ── REGULAR TICKET VIEW ──────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -76,7 +290,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
           fontWeight: 600,
         }}
       >
-        Check your email — your QR ticket is on its way 📧
+        Check your email. Your QR ticket is on its way 📧
       </p>
 
       {community_link && (

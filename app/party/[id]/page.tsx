@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
+import { Calendar, Clock, Shirt, StopCircle, MapPin, MessageCircle, Ticket } from "lucide-react";
 
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -119,10 +120,10 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const party = await getParty(id);
-  if (!party) return { title: "Event Not Found — TheScene" };
+  if (!party) return { title: "Event Not Found | TheScene" };
   const image = resolveImage(party);
   return {
-    title: `${party.title} — TheScene`,
+    title: `${party.title} | TheScene`,
     description: party.description ?? `Get tickets for ${party.title}`,
     openGraph: {
       title: party.title,
@@ -284,10 +285,9 @@ export default async function PartyPage({ params }: PageProps) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 64,
               }}
             >
-              🎉
+              <Ticket size={64} color="rgba(139,92,246,0.4)" />
             </div>
           )}
         </div>
@@ -356,9 +356,13 @@ export default async function PartyPage({ params }: PageProps) {
                     color: "#c084fc",
                     fontSize: 13,
                     fontWeight: 500,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  📅 {dt.date}
+                  <Calendar size={13} />
+                  {dt.date}
                 </span>
               )}
               {dt && (
@@ -370,9 +374,13 @@ export default async function PartyPage({ params }: PageProps) {
                     padding: "6px 14px",
                     color: "rgba(255,255,255,0.6)",
                     fontSize: 13,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  🕐 {dt.time}
+                  <Clock size={13} />
+                  {dt.time}
                 </span>
               )}
               {party.date_tba && (
@@ -384,9 +392,13 @@ export default async function PartyPage({ params }: PageProps) {
                     padding: "6px 14px",
                     color: "rgba(255,255,255,0.5)",
                     fontSize: 13,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  📅 Date TBA
+                  <Calendar size={13} />
+                  Date TBA
                 </span>
               )}
               {party.dress_code && (
@@ -398,9 +410,13 @@ export default async function PartyPage({ params }: PageProps) {
                     padding: "6px 14px",
                     color: "rgba(255,255,255,0.6)",
                     fontSize: 13,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  👔 {party.dress_code}
+                  <Shirt size={13} />
+                  {party.dress_code}
                 </span>
               )}
               {isEnded && (
@@ -413,9 +429,13 @@ export default async function PartyPage({ params }: PageProps) {
                     color: "#f87171",
                     fontSize: 13,
                     fontWeight: 600,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  🛑 Event Ended
+                  <StopCircle size={13} />
+                  Event Ended
                 </span>
               )}
             </div>
@@ -461,11 +481,10 @@ export default async function PartyPage({ params }: PageProps) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 20,
                   flexShrink: 0,
                 }}
               >
-                📍
+                <MapPin size={18} color="#a855f7" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
@@ -528,15 +547,14 @@ export default async function PartyPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Vibes / Genres */}
-        {((party.music_genres?.length ?? 0) > 0 ||
-          (party.vibes?.length ?? 0) > 0) && (
+        {/* Music Genres & Vibes */}
+        {((party.music_genres?.length ?? 0) > 0 || (party.vibes?.length ?? 0) > 0) && (
           <div
             className="glass"
             style={{ borderRadius: 20, padding: "24px", marginBottom: 24 }}
           >
             {party.music_genres?.length > 0 && (
-              <div style={{ marginBottom: party.vibes?.length ? 16 : 0 }}>
+              <div style={{ marginBottom: party.vibes?.length > 0 ? 16 : 0 }}>
                 <p
                   style={{
                     margin: "0 0 10px",
@@ -569,6 +587,7 @@ export default async function PartyPage({ params }: PageProps) {
                 </div>
               </div>
             )}
+
             {party.vibes?.length > 0 && (
               <div>
                 <p
@@ -588,12 +607,13 @@ export default async function PartyPage({ params }: PageProps) {
                     <span
                       key={v}
                       style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.1)",
+                        background: "rgba(236,72,153,0.08)",
+                        border: "1px solid rgba(236,72,153,0.2)",
                         borderRadius: 100,
                         padding: "4px 12px",
-                        color: "rgba(255,255,255,0.5)",
+                        color: "#ec4899",
                         fontSize: 12,
+                        fontWeight: 500,
                       }}
                     >
                       {v}
@@ -620,7 +640,9 @@ export default async function PartyPage({ params }: PageProps) {
               gap: 16,
             }}
           >
-            <div style={{ fontSize: 24 }}>💬</div>
+            <div style={{ flexShrink: 0 }}>
+              <MessageCircle size={24} color="#a855f7" />
+            </div>
             <div>
               <p
                 style={{
@@ -668,7 +690,7 @@ export default async function PartyPage({ params }: PageProps) {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {activeTiers.map((tier: any) => {
-                const available = tier.quantity - (tier.quantity_sold ?? 0);
+                const available = Math.max(0, tier.quantity - (tier.quantity_sold ?? 0));
                 const soldOut = available <= 0;
                 return (
                   <div

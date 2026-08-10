@@ -15,6 +15,8 @@ interface TicketTier {
   is_active: boolean;
   tier_order: number;
   max_per_order: number | null;
+  tier_type: string | null;
+  table_capacity: number | null;
 }
 
 interface Party {
@@ -70,12 +72,12 @@ export default function CheckoutPage() {
       const partyQuery = isUuid
         ? supabase
             .from("parties")
-            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, host_profile:host_profiles!host_profile_id(name)")
+            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, absorb_fee, host_profile:host_profiles!host_profile_id(name)")
             .eq("id", targetIdOrSlug)
             .single()
         : supabase
             .from("parties")
-            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, host_profile:host_profiles!host_profile_id(name)")
+            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, absorb_fee, host_profile:host_profiles!host_profile_id(name)")
             .eq("slug", targetIdOrSlug)
             .single();
 
@@ -94,7 +96,7 @@ export default function CheckoutPage() {
 
         const activeTiers = (tiersData ?? []).map((t: any) => ({
           ...t,
-          available: t.quantity - (t.quantity_sold ?? 0),
+          available: Math.max(0, t.quantity - (t.quantity_sold ?? 0)),
         }));
         setTiers(activeTiers);
         if (activeTiers.length > 0) {
@@ -114,7 +116,7 @@ export default function CheckoutPage() {
     ? selectedTier.quantity - (selectedTier.quantity_sold ?? 0)
     : 0;
   const subtotal = selectedTier ? selectedTier.price * quantity : 0;
-  const fee = subtotal * APP_FEE;
+  const fee = (party as any)?.absorb_fee ? 0 : subtotal * APP_FEE;
   const total = subtotal + fee;
   const symbol = CURRENCY_SYMBOLS[party?.currency_code ?? "NGN"] ?? "₦";
 
@@ -155,6 +157,7 @@ export default function CheckoutPage() {
             serviceFee: p.fee,
             totalPaid: p.total,
             currency: party.currency_code,
+            tierType: selectedTier?.tier_type ?? null, // hint for edge function
           },
         },
       );
@@ -166,12 +169,21 @@ export default function CheckoutPage() {
       }
 
       const ticketId = result.ticketId;
-      const commQuery = party.community_link 
+      const claimToken = result.claimToken ?? null;
+      // Use claimToken as source of truth since edge fn only generates it for tables
+      const isTable = !!claimToken || selectedTier?.tier_type === "table";
+      const slug = targetIdOrSlug;
+
+      const commQuery = party.community_link
         ? `&community_link=${encodeURIComponent(party.community_link)}&community_platform=${encodeURIComponent(party.community_platform || "WhatsApp")}`
         : "";
 
+      const tableQuery = isTable && claimToken
+        ? `&is_table=1&claim_token=${claimToken}&table_name=${encodeURIComponent(selectedTier?.name ?? "")}&table_capacity=${selectedTier?.table_capacity ?? ""}`
+        : "";
+
       router.push(
-        `/${targetIdOrSlug}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}${commQuery}`,
+        `/${slug}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}${commQuery}${tableQuery}`,
       );
     } catch (err: any) {
       console.error("handlePaymentSuccess error:", err);
@@ -513,11 +525,15 @@ export default function CheckoutPage() {
               fontWeight: 700,
             }}
           >
-            Select Ticket
+            {tiers.some((t: any) => t.tier_type === "table") && !tiers.some((t: any) => t.tier_type === "ticket")
+              ? "Reserve a Table"
+              : tiers.some((t: any) => t.tier_type === "table")
+              ? "Select Ticket or Table"
+              : "Select Ticket"}
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {tiers.map((tier: any) => {
-              const avail = tier.quantity - (tier.quantity_sold ?? 0);
+              const avail = Math.max(0, tier.quantity - (tier.quantity_sold ?? 0));
               const soldOut = avail <= 0;
               const selected = selectedTierId === tier.id;
               return (
@@ -585,7 +601,7 @@ export default function CheckoutPage() {
             })}
           </div>
 
-          {selectedTier && available > 1 && (
+          {selectedTier && available > 1 && selectedTier.tier_type !== "table" && (
             <div style={{ marginTop: 20 }}>
               <div
                 style={{

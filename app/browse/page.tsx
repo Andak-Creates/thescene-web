@@ -6,15 +6,36 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Browse Events — TheScene",
+  title: "Browse Events | TheScene",
   description:
-    "Discover the best parties and events near you. Buy tickets instantly — no account required.",
+    "Discover the best parties and events near you. Buy tickets instantly, no account required.",
 };
 
 // Parties revalidate every 60 seconds (events change frequently)
 export const revalidate = 60;
 
-async function getParties(city?: string) {
+function normalizeStateName(rawLocation: string): string {
+  if (!rawLocation) return "";
+  const s = rawLocation.trim().toLowerCase();
+  if (s.includes("lagos")) return "Lagos";
+  if (s.includes("abuja") || s.includes("fct")) return "Abuja";
+  if (s.includes("river") || s.includes("port harcourt")) return "Rivers";
+  if (s.includes("delta") || s.includes("warri") || s.includes("oleh")) return "Delta";
+  if (s.includes("kwara") || s.includes("ilorin")) return "Kwara";
+  if (s.includes("oyo") || s.includes("ibadan")) return "Oyo";
+  if (s.includes("edo") || s.includes("benin")) return "Edo";
+  if (s.includes("ogun")) return "Ogun";
+  if (s.includes("epe")) return "Lagos";
+  if (s.includes("lekki") || s.includes("yaba") || s.includes("ikeja") || s.includes("sangotedo") || s.includes("sangotendo") || s.includes("orchid")) return "Lagos";
+
+  // Capitalize words
+  return rawLocation
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+async function getParties(selectedState?: string) {
   const now = new Date();
   const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
   let query = supabase
@@ -28,14 +49,16 @@ async function getParties(city?: string) {
     `,
     )
     .eq("is_published", true)
+    .eq("is_private", false)
     .or(
       `date.gte.${twelveHoursAgo.toISOString()},end_date.gte.${now.toISOString()},date_tba.eq.true`,
     )
     .order("date", { ascending: true })
     .limit(60);
 
-  if (city) {
-    query = query.ilike("city", `%${city}%`);
+  if (selectedState) {
+    const loc = selectedState.trim();
+    query = query.or(`state.ilike.%${loc}%,city.ilike.%${loc}%`);
   }
 
   const { data, error } = await query;
@@ -44,7 +67,10 @@ async function getParties(city?: string) {
     return [];
   }
 
-  return (data ?? []).filter((p: any) => {
+  return (data ?? []).map((p: any) => ({
+    ...p,
+    host_profile: Array.isArray(p.host_profile) ? p.host_profile[0] : p.host_profile,
+  })).filter((p: any) => {
     if (p.date_tba) return true;
     if (p.end_date) return new Date(p.end_date) >= now;
     if (p.date) {
@@ -54,31 +80,51 @@ async function getParties(city?: string) {
   });
 }
 
-// Cities change rarely — cache this result for 1 hour independently of the
-// page-level revalidate so party list refreshes don't force a cities re-fetch.
-const getCities = unstable_cache(
+// States change rarely — cache this result for 1 hour independently of the
+// page-level revalidate so party list refreshes don't force a states re-fetch.
+const getActiveStates = unstable_cache(
   async () => {
+    const now = new Date();
+    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
     const { data } = await supabase
       .from("parties")
-      .select("city, state")
+      .select("state, city, date, end_date, date_tba")
       .eq("is_published", true)
-      .not("city", "is", null);
-    const cities = [
-      ...new Set((data ?? []).map((p) => p.city).filter(Boolean)),
-    ];
-    return cities.slice(0, 10) as string[];
+      .eq("is_private", false)
+      .or(
+        `date.gte.${twelveHoursAgo.toISOString()},end_date.gte.${now.toISOString()},date_tba.eq.true`,
+      );
+
+    const activeEvents = (data ?? []).filter((p: any) => {
+      if (p.date_tba) return true;
+      if (p.end_date) return new Date(p.end_date) >= now;
+      if (p.date) return new Date(p.date) >= twelveHoursAgo;
+      return true;
+    });
+
+    const statesSet = new Set<string>();
+    activeEvents.forEach((p) => {
+      const stateName = normalizeStateName(p.state || p.city || "");
+      if (stateName) statesSet.add(stateName);
+    });
+
+    return Array.from(statesSet);
   },
-  ["browse-cities"], // cache key
-  { revalidate: 3600 }, // 1 hour
+  ["browse-active-states"], // cache key
+  { revalidate: 60 }, // 60 seconds
 );
 
 export default async function BrowsePage({
   searchParams,
 }: {
-  searchParams: Promise<{ city?: string }>;
+  searchParams: Promise<{ state?: string; city?: string; location?: string }>;
 }) {
-  const { city } = await searchParams;
-  const [parties, cities] = await Promise.all([getParties(city), getCities()]);
+  const params = await searchParams;
+  const currentLocation = params.state || params.location || params.city || "";
+  const [parties, activeStates] = await Promise.all([
+    getParties(currentLocation),
+    getActiveStates(),
+  ]);
 
   return (
     <div style={{ minHeight: "100vh", padding: "0 0 80px" }}>
@@ -139,62 +185,78 @@ export default async function BrowsePage({
             lineHeight: 1.6,
           }}
         >
-          Browse parties, concerts, and events near you. Buy tickets in seconds
-          — no account needed.
+          Browse parties, concerts, and events near you. Buy tickets in seconds.
+          No account needed.
         </p>
 
-        {/* City filter pills */}
-        {cities.length > 0 && (
-          <div
+        {/* State filter pills */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            justifyContent: "center",
+            maxWidth: 700,
+            margin: "0 auto",
+          }}
+        >
+          <Link
+            href="/browse"
             style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 8,
-              justifyContent: "center",
+              padding: "8px 18px",
+              borderRadius: 100,
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+              background: !currentLocation
+                ? "linear-gradient(135deg, #7C3AED, #a855f7)"
+                : "rgba(255,255,255,0.06)",
+              color: "#fff",
+              border: currentLocation ? "1px solid rgba(255,255,255,0.1)" : "none",
+              transition: "all 0.2s",
             }}
           >
-            <Link
-              href="/browse"
-              style={{
-                padding: "8px 18px",
-                borderRadius: 100,
-                fontSize: 13,
-                fontWeight: 600,
-                textDecoration: "none",
-                background: !city
-                  ? "linear-gradient(135deg, #7C3AED, #a855f7)"
-                  : "rgba(255,255,255,0.06)",
-                color: "#fff",
-                border: city ? "1px solid rgba(255,255,255,0.1)" : "none",
-                transition: "opacity 0.2s",
-              }}
-            >
-              All Cities
-            </Link>
-            {cities.map((c) => (
+            All States
+          </Link>
+          {activeStates.map((st) => {
+            const isActive =
+              currentLocation.toLowerCase() === st.toLowerCase();
+            return (
               <Link
-                key={c}
-                href={`/browse?city=${encodeURIComponent(c)}`}
+                key={st}
+                href={`/browse?state=${encodeURIComponent(st)}`}
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                   padding: "8px 18px",
                   borderRadius: 100,
                   fontSize: 13,
                   fontWeight: 600,
                   textDecoration: "none",
-                  background:
-                    city === c
-                      ? "linear-gradient(135deg, #7C3AED, #a855f7)"
-                      : "rgba(255,255,255,0.06)",
+                  background: isActive
+                    ? "linear-gradient(135deg, #7C3AED, #a855f7)"
+                    : "rgba(255,255,255,0.06)",
                   color: "#fff",
-                  border:
-                    city !== c ? "1px solid rgba(255,255,255,0.1)" : "none",
+                  border: !isActive ? "1px solid rgba(255,255,255,0.1)" : "none",
+                  transition: "all 0.2s",
                 }}
               >
-                {c}
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    backgroundColor: "#10b981",
+                    display: "inline-block",
+                    marginTop: 1,
+                  }}
+                />
+                {st}
               </Link>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
 
       {/* Grid */}
@@ -203,14 +265,17 @@ export default async function BrowsePage({
           <div style={{ textAlign: "center", padding: "80px 0" }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>🎭</div>
             <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>
-              No events found
+              No events found {currentLocation ? `in ${currentLocation}` : ""}
             </p>
-            {city && (
+            {currentLocation && (
               <Link
                 href="/browse"
                 style={{
+                  display: "inline-block",
+                  marginTop: 12,
                   color: "#a855f7",
                   fontSize: 14,
+                  fontWeight: 600,
                   textDecoration: "none",
                 }}
               >
@@ -219,31 +284,17 @@ export default async function BrowsePage({
             )}
           </div>
         ) : (
-          <>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.3)",
-                fontSize: 13,
-                marginBottom: 24,
-              }}
-            >
-              {parties.length} {parties.length === 1 ? "event" : "events"}
-              {city ? ` in ${city}` : ""}
-            </p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                gap: 20,
-              }}
-            >
-              {parties.map((party: any, i: number) => (
-                <div key={party.id} style={{ animationDelay: `${i * 40}ms` }}>
-                  <EventCard party={party} />
-                </div>
-              ))}
-            </div>
-          </>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: 24,
+            }}
+          >
+            {parties.map((party) => (
+              <EventCard key={party.id} party={party} />
+            ))}
+          </div>
         )}
       </div>
     </div>
