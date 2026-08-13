@@ -55,7 +55,9 @@ export default function ClaimTableClient({
       })
     : null;
 
-  const flyerUrl = partyFlyerUrl ? getOptimizedImageUrl(partyFlyerUrl, 800) ?? partyFlyerUrl : null;
+  const flyerUrl = partyFlyerUrl
+    ? (getOptimizedImageUrl(partyFlyerUrl, 800) ?? partyFlyerUrl)
+    : null;
 
   async function handleClaim(e: React.FormEvent) {
     e.preventDefault();
@@ -82,13 +84,17 @@ export default function ClaimTableClient({
       );
 
       if (fnError || !data?.success) {
-        throw new Error(fnError?.message ?? data?.error ?? "Claim failed. Please try again.");
+        throw new Error(
+          fnError?.message ?? data?.error ?? "Claim failed. Please try again.",
+        );
       }
 
       setRemainingSeats((prev) => Math.max(0, prev - 1));
       setSuccess(true);
     } catch (err: unknown) {
-      setError((err as Error).message || "Something went wrong. Please try again.");
+      setError(
+        (err as Error).message || "Something went wrong. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -135,11 +141,26 @@ export default function ClaimTableClient({
         >
           Seat Claimed!
         </h1>
-        <p style={{ margin: "0 0 8px", color: "rgba(255,255,255,0.6)", fontSize: 16, maxWidth: 420, lineHeight: 1.6 }}>
-          You&apos;re now on {hostGuestName ? `${hostGuestName}'s` : "the"} table for{" "}
-          <strong style={{ color: "#fff" }}>{partyTitle}</strong>.
+        <p
+          style={{
+            margin: "0 0 8px",
+            color: "rgba(255,255,255,0.6)",
+            fontSize: 16,
+            maxWidth: 420,
+            lineHeight: 1.6,
+          }}
+        >
+          You&apos;re now on {hostGuestName ? `${hostGuestName}'s` : "the"}{" "}
+          table for <strong style={{ color: "#fff" }}>{partyTitle}</strong>.
         </p>
-        <p style={{ margin: "0 0 40px", color: "#a855f7", fontSize: 15, fontWeight: 600 }}>
+        <p
+          style={{
+            margin: "0 0 40px",
+            color: "#a855f7",
+            fontSize: 15,
+            fontWeight: 600,
+          }}
+        >
           Check your email. Your QR ticket is on its way 📧
         </p>
         <Link
@@ -212,30 +233,72 @@ export default function ClaimTableClient({
               height: 107,
               borderRadius: 14,
               overflow: "hidden",
-              boxShadow: "0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)",
+              boxShadow:
+                "0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)",
               zIndex: 2,
             }}
           >
-            <Image src={flyerUrl} alt={partyTitle} fill sizes="80px" style={{ objectFit: "cover" }} />
+            <Image
+              src={flyerUrl}
+              alt={partyTitle}
+              fill
+              sizes="80px"
+              style={{ objectFit: "cover" }}
+            />
           </div>
         )}
       </div>
 
       {/* Content */}
-      <div style={{ maxWidth: 500, margin: "0 auto", padding: flyerUrl ? "60px 24px 0" : "120px 24px 0" }}>
+      <div
+        style={{
+          maxWidth: 500,
+          margin: "0 auto",
+          padding: flyerUrl ? "60px 24px 0" : "120px 24px 0",
+        }}
+      >
         {/* Event info */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <p style={{ margin: "0 0 6px", color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>
+          <p
+            style={{
+              margin: "0 0 6px",
+              color: "rgba(255,255,255,0.4)",
+              fontSize: 12,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+            }}
+          >
             You&apos;ve been invited to
           </p>
-          <h1 style={{ margin: "0 0 8px", color: "#fff", fontSize: "clamp(22px, 4vw, 30px)", fontWeight: 900, letterSpacing: "-0.4px" }}>
+          <h1
+            style={{
+              margin: "0 0 8px",
+              color: "#fff",
+              fontSize: "clamp(22px, 4vw, 30px)",
+              fontWeight: 900,
+              letterSpacing: "-0.4px",
+            }}
+          >
             {partyTitle}
           </h1>
-          <p style={{ margin: "0 0 4px", color: "rgba(255,255,255,0.5)", fontSize: 14 }}>
+          <p
+            style={{
+              margin: "0 0 4px",
+              color: "rgba(255,255,255,0.5)",
+              fontSize: 14,
+            }}
+          >
             {partyDateTba ? "Date TBA" : formattedDate}
           </p>
           {partyLocation && (
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.35)", fontSize: 13 }}>
+            <p
+              style={{
+                margin: 0,
+                color: "rgba(255,255,255,0.35)",
+                fontSize: 13,
+              }}
+            >
               {partyLocation}
             </p>
           )}
@@ -254,22 +317,50 @@ export default function ClaimTableClient({
           }}
         >
           <div>
-            <p style={{ margin: "0 0 2px", color: "#fff", fontWeight: 700, fontSize: 15 }}>
+            <p
+              style={{
+                margin: "0 0 2px",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 15,
+              }}
+            >
               🪑 {tierName}
             </p>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
+            <p
+              style={{
+                margin: 0,
+                color: "rgba(255,255,255,0.4)",
+                fontSize: 12,
+              }}
+            >
               Hosted by {hostGuestName}
             </p>
           </div>
           <div style={{ textAlign: "right" }}>
             {isFull ? (
-              <span style={{ color: "#f87171", fontWeight: 700, fontSize: 13 }}>Table Full</span>
+              <span style={{ color: "#f87171", fontWeight: 700, fontSize: 13 }}>
+                Table Full
+              </span>
             ) : (
               <>
-                <p style={{ margin: 0, color: "#a855f7", fontWeight: 800, fontSize: 18 }}>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "#a855f7",
+                    fontWeight: 800,
+                    fontSize: 18,
+                  }}
+                >
                   {remainingSeats}
                 </p>
-                <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 11 }}>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "rgba(255,255,255,0.4)",
+                    fontSize: 11,
+                  }}
+                >
                   seat{remainingSeats !== 1 ? "s" : ""} left
                 </p>
               </>
@@ -288,26 +379,60 @@ export default function ClaimTableClient({
               textAlign: "center",
             }}
           >
-            <p style={{ margin: "0 0 8px", color: "#f87171", fontWeight: 700, fontSize: 16 }}>
+            <p
+              style={{
+                margin: "0 0 8px",
+                color: "#f87171",
+                fontWeight: 700,
+                fontSize: 16,
+              }}
+            >
               This table is fully booked
             </p>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 14 }}>
-              All {tableCapacity} seats have been claimed. Contact your host to see if another table is available.
+            <p
+              style={{
+                margin: 0,
+                color: "rgba(255,255,255,0.4)",
+                fontSize: 14,
+              }}
+            >
+              All {tableCapacity} seats have been claimed. Contact your host to
+              see if another table is available.
             </p>
           </div>
         ) : (
           /* Claim form */
           <form onSubmit={handleClaim}>
-            <div className="glass" style={{ borderRadius: 20, padding: 24, marginBottom: 16 }}>
-              <h2 style={{ margin: "0 0 16px", color: "#fff", fontSize: 16, fontWeight: 700 }}>
+            <div
+              className="glass"
+              style={{ borderRadius: 20, padding: 24, marginBottom: 16 }}
+            >
+              <h2
+                style={{
+                  margin: "0 0 16px",
+                  color: "#fff",
+                  fontSize: 16,
+                  fontWeight: 700,
+                }}
+              >
                 Claim Your Seat
               </h2>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              >
                 <div>
                   <label
                     htmlFor="claim-name"
-                    style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}
+                    style={{
+                      display: "block",
+                      color: "rgba(255,255,255,0.5)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 6,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}
                   >
                     Full Name
                   </label>
@@ -330,14 +455,24 @@ export default function ClaimTableClient({
                       boxSizing: "border-box",
                     }}
                     onFocus={(e) => (e.target.style.borderColor = "#8B5CF6")}
-                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+                    onBlur={(e) =>
+                      (e.target.style.borderColor = "rgba(255,255,255,0.12)")
+                    }
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="claim-email"
-                    style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}
+                    style={{
+                      display: "block",
+                      color: "rgba(255,255,255,0.5)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 6,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}
                   >
                     Email (your QR ticket will be sent here)
                   </label>
@@ -360,7 +495,9 @@ export default function ClaimTableClient({
                       boxSizing: "border-box",
                     }}
                     onFocus={(e) => (e.target.style.borderColor = "#8B5CF6")}
-                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+                    onBlur={(e) =>
+                      (e.target.style.borderColor = "rgba(255,255,255,0.12)")
+                    }
                   />
                 </div>
               </div>
@@ -376,7 +513,9 @@ export default function ClaimTableClient({
                   marginBottom: 16,
                 }}
               >
-                <p style={{ margin: 0, color: "#f87171", fontSize: 14 }}>{error}</p>
+                <p style={{ margin: 0, color: "#f87171", fontSize: 14 }}>
+                  {error}
+                </p>
               </div>
             )}
 
@@ -395,7 +534,9 @@ export default function ClaimTableClient({
                 fontSize: 16,
                 fontWeight: 700,
                 cursor: submitting ? "not-allowed" : "pointer",
-                boxShadow: submitting ? "none" : "0 0 32px rgba(139,92,246,0.35)",
+                boxShadow: submitting
+                  ? "none"
+                  : "0 0 32px rgba(139,92,246,0.35)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -421,7 +562,14 @@ export default function ClaimTableClient({
               )}
             </button>
 
-            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 12 }}>
+            <p
+              style={{
+                textAlign: "center",
+                color: "rgba(255,255,255,0.25)",
+                fontSize: 12,
+                marginTop: 12,
+              }}
+            >
               Free to claim · Your QR code will be emailed to you
             </p>
           </form>
