@@ -1,5 +1,7 @@
 "use client";
 
+import { Armchair } from "lucide-react";
+
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
@@ -61,6 +63,9 @@ export default function ClaimTableClient({
 
   async function handleClaim(e: React.FormEvent) {
     e.preventDefault();
+    if (typeof window !== "undefined" && localStorage.getItem(`claimed_seat_${parentTicketId}`)) {
+      return setError("You have already claimed a seat at this table on this device!");
+    }
     if (!name.trim()) return setError("Please enter your name.");
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return setError("Please enter a valid email address.");
@@ -90,6 +95,9 @@ export default function ClaimTableClient({
       }
 
       setRemainingSeats((prev) => Math.max(0, prev - 1));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`claimed_seat_${parentTicketId}`, "true");
+      }
       setSuccess(true);
     } catch (err: unknown) {
       setError(
@@ -185,7 +193,8 @@ export default function ClaimTableClient({
         style={{
           position: "relative",
           width: "100%",
-          height: 280,
+          paddingTop: 100,
+          paddingBottom: 24,
           overflow: "hidden",
         }}
       >
@@ -197,7 +206,7 @@ export default function ClaimTableClient({
               backgroundImage: `url("${flyerUrl}")`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              filter: "blur(14px) brightness(0.6) saturate(1.4)",
+              filter: "blur(24px) brightness(0.4) saturate(1.4)",
               transform: "scale(1.1)",
             }}
           />
@@ -217,33 +226,40 @@ export default function ClaimTableClient({
             bottom: 0,
             left: 0,
             right: 0,
-            height: 100,
+            height: 120,
             background: "linear-gradient(to bottom, transparent, #0b0514)",
           }}
         />
-        {/* Flyer thumbnail */}
+
+        {/* Prominent Flyer Card */}
         {flyerUrl && (
           <div
             style={{
-              position: "absolute",
-              bottom: -40,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: 80,
-              height: 107,
-              borderRadius: 14,
+              position: "relative",
+              zIndex: 2,
+              maxWidth: 440,
+              width: "calc(100% - 48px)",
+              margin: "0 auto",
+              borderRadius: 20,
               overflow: "hidden",
               boxShadow:
-                "0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)",
-              zIndex: 2,
+                "0 12px 60px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.12), 0 0 90px rgba(139,92,246,0.3)",
+              background: "rgba(11, 5, 20, 0.8)",
             }}
           >
             <Image
               src={flyerUrl}
               alt={partyTitle}
-              fill
-              sizes="80px"
-              style={{ objectFit: "cover" }}
+              width={440}
+              height={380}
+              unoptimized
+              style={{
+                width: "100%",
+                height: "auto",
+                maxHeight: 380,
+                objectFit: "contain",
+                display: "block",
+              }}
             />
           </div>
         )}
@@ -254,7 +270,7 @@ export default function ClaimTableClient({
         style={{
           maxWidth: 500,
           margin: "0 auto",
-          padding: flyerUrl ? "60px 24px 0" : "120px 24px 0",
+          padding: "24px 24px 0",
         }}
       >
         {/* Event info */}
@@ -325,7 +341,7 @@ export default function ClaimTableClient({
                 fontSize: 15,
               }}
             >
-              🪑 {tierName}
+              <span className="inline-flex items-center gap-2"><Armchair size={18} className="text-purple-400" /> {tierName}</span>
             </p>
             <p
               style={{

@@ -14,7 +14,7 @@ const ForHosts = () => {
           </h2>
           <p className="text-theme-muted text-lg mb-8 leading-relaxed">
             TheScene isn&apos;t just for party-goers. Hosts get a professional
-            command centre, <strong className="text-white">Soso</strong>, to
+            command centre, <strong className="text-white">bhind</strong>, to
             manage ticketing, track revenue, and grow their community, whether
             you&apos;re running a club night or a corporate conference.
           </p>
@@ -50,8 +50,8 @@ const ForHosts = () => {
           </ul>
 
           <div className="flex flex-wrap gap-4">
-            <Button href="https://soso.thesceneapp.online" variant="primary" className="px-10">
-              Launch Soso Dashboard
+            <Button href="https://bhind.thesceneapp.online" variant="primary" className="px-10">
+              Launch bhind Dashboard
             </Button>
             <Button href="/download" variant="secondary" className="px-8">
               Download TheScene App
@@ -176,7 +176,7 @@ const ForHosts = () => {
               {/* Hover Overlay */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-[4px] bg-theme-bg/40">
                 <span className="bg-theme-purple text-white px-5 py-2 rounded-xl text-[10px] font-bold shadow-2xl shadow-theme-purple/40">
-                  Open Soso Dashboard
+                  Open bhind Dashboard
                 </span>
               </div>
             </div>

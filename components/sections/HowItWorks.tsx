@@ -54,7 +54,7 @@ const HowItWorks = () => {
     {
       title: "Digital QR Access",
       description:
-        "Your ticket lands straight in your email and inside the app the second you pay. Just show your QR code at the door for instant entry—no printing needed.",
+        "Your ticket lands straight in your email and inside the app the second you pay. Just show your QR code at the door for instant entry. No printing needed.",
       icon: (
         <svg
           className="w-6 h-6"

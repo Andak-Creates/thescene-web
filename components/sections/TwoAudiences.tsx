@@ -57,7 +57,7 @@ const audiences = [
     accentColor: "border-theme-purple/20",
     glowColor: "bg-theme-purple/10",
     cta: "Open Host Dashboard",
-    ctaHref: "https://soso.thesceneapp.online",
+    ctaHref: "https://bhind.thesceneapp.online",
     ctaStyle:
       "bg-theme-purple hover:brightness-110 text-white",
     description:

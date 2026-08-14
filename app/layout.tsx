@@ -1,3 +1,4 @@
+import ComingSoonModal from "@/components/ui/ComingSoonModal";
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -73,6 +74,7 @@ export default function RootLayout({
         <AppEntryModal />
         <Navbar />
         {children}
+        <ComingSoonModal />
         <SpeedInsights />
         <Analytics />
       </body>

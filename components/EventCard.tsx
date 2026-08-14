@@ -1,3 +1,4 @@
+import { Calendar, MapPin } from "lucide-react";
 import Link from "next/link";
 import PartyImage from "@/components/PartyImage";
 
@@ -187,7 +188,7 @@ export default function EventCard({ party }: { party: Party }) {
                 fontWeight: 500,
               }}
             >
-              📅 {formatDate(party.date, party.date_tba)}
+              <span className="inline-flex items-center gap-1.5"><Calendar size={12} className="text-purple-400 shrink-0" />{formatDate(party.date, party.date_tba)}</span>
             </span>
             {(party.city || party.state) && (
               <span
@@ -200,7 +201,7 @@ export default function EventCard({ party }: { party: Party }) {
                   fontSize: 11,
                 }}
               >
-                📍 {party.city ?? party.state}
+                <span className="inline-flex items-center gap-1.5"><MapPin size={12} className="text-gray-400 shrink-0" />{party.city ?? party.state}</span>
               </span>
             )}
           </div>

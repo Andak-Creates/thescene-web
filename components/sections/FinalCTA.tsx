@@ -10,7 +10,7 @@ const FinalCTA = () => {
       <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
         <h2
           data-aos="fade-up"
-          className="text-4xl md:text-6xl font-heading font-extrabold text-white mb-6 tracking-tight"
+          className="text-3xl md:text-6xl font-heading font-extrabold text-white mb-6 tracking-tight"
         >
           Your next event starts here.
         </h2>
@@ -81,7 +81,7 @@ const FinalCTA = () => {
         >
           <p className="text-theme-muted mb-4">Already hosting an event?</p>
           <a
-            href="https://soso.thesceneapp.online"
+            href="https://bhind.thesceneapp.online"
             className="inline-flex items-center justify-center font-semibold text-theme-purple hover:text-white transition-colors"
           >
             Get started &rarr;

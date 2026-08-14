@@ -33,7 +33,7 @@ const getParty = cache(async (idOrSlug: string) => {
       host:profiles!host_id (username, avatar_url),
       host_profile:host_profiles!host_profile_id (id, name, avatar_url, is_verified),
       media:party_media (media_url, media_type, thumbnail_url, is_primary, display_order),
-      tiers:ticket_tiers (id, name, price, quantity, quantity_sold, is_active, tier_order)
+      tiers:ticket_tiers (id, name, price, quantity, quantity_sold, is_active, tier_order, tier_type, table_capacity)
     `,
     )
     .eq("is_published", true);
@@ -709,16 +709,35 @@ export default async function PartyPage({ params }: PageProps) {
                     }}
                   >
                     <div>
-                      <p
-                        style={{
-                          margin: "0 0 3px",
-                          color: "#fff",
-                          fontWeight: 700,
-                          fontSize: 15,
-                        }}
-                      >
-                        {tier.name}
-                      </p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: 15,
+                          }}
+                        >
+                          {tier.name}
+                        </p>
+                        {(tier.tier_type === "table" || tier.tier_type === "group") && (
+                          <span
+                            style={{
+                              background: "rgba(168,85,247,0.15)",
+                              border: "1px solid rgba(168,85,247,0.3)",
+                              borderRadius: 6,
+                              padding: "2px 8px",
+                              color: "#c084fc",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: 0.5,
+                            }}
+                          >
+                            {tier.tier_type === "table" ? "🪑 Table" : "👥 Group Pass"} {tier.table_capacity ? `(${tier.table_capacity} seats)` : ""}
+                          </span>
+                        )}
+                      </div>
                       {soldOut ? (
                         <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
                           Sold out
