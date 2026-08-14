@@ -1,0 +1,246 @@
+"use client";
+
+import { Users } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import Image from "next/image";
+import Link from "next/link";
+import { getOptimizedImageUrl } from "@/lib/media";
+
+interface Props {
+  parentTicketId: string;
+  partyId: string;
+  tierId: string;
+  partyTitle: string;
+  partyDate: string | null;
+  partyDateTba: boolean;
+  partyLocation: string;
+  partyFlyerUrl: string | null;
+  currencyCode: string;
+  groupCapacity: number;
+  remainingSpots: number;
+  hostGuestName: string;
+  tierName: string;
+  slug: string;
+}
+
+export default function ClaimGroupClient({
+  parentTicketId,
+  partyId,
+  tierId,
+  partyTitle,
+  partyDate,
+  partyDateTba,
+  partyLocation,
+  partyFlyerUrl,
+  groupCapacity,
+  remainingSpots: initialRemaining,
+  hostGuestName,
+  tierName,
+}: Props) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [remainingSpots, setRemainingSpots] = useState(initialRemaining);
+
+  const isFull = remainingSpots <= 0;
+
+  const formattedDate = partyDate
+    ? new Date(partyDate).toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+
+  const flyerUrl = partyFlyerUrl
+    ? (getOptimizedImageUrl(partyFlyerUrl, 800) ?? partyFlyerUrl)
+    : null;
+
+  async function handleClaim(e: React.FormEvent) {
+    e.preventDefault();
+    if (typeof window !== "undefined" && localStorage.getItem(`claimed_group_ticket_${parentTicketId}`)) {
+      return setError("You have already claimed a ticket for this group on this device!");
+    }
+    if (!name.trim()) return setError("Please enter your name.");
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return setError("Please enter a valid email address.");
+
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke(
+        "claim-group-ticket",
+        {
+          body: {
+            parentTicketId,
+            partyId,
+            tierId,
+            guestName: name.trim(),
+            guestEmail: email.toLowerCase().trim(),
+          },
+        },
+      );
+
+      if (fnError || !data?.success) {
+        throw new Error(
+          fnError?.message ?? data?.error ?? "Claim failed. Please try again.",
+        );
+      }
+
+      setRemainingSpots((prev) => Math.max(0, prev - 1));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`claimed_group_ticket_${parentTicketId}`, "true");
+      }
+      setSuccess(true);
+    } catch (err: unknown) {
+      setError((err as Error).message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <div style={{ minHeight: "80vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "120px 24px 60px", textAlign: "center" }}>
+        <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(135deg, #7C3AED, #a855f7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, marginBottom: 24, boxShadow: "0 0 60px rgba(139,92,246,0.45)" }}>
+          🎉
+        </div>
+        <h1 style={{ margin: "0 0 12px", color: "#fff", fontSize: "clamp(26px, 5vw, 36px)", fontWeight: 900, letterSpacing: "-0.5px" }}>
+          Ticket Claimed!
+        </h1>
+        <p style={{ margin: "0 0 8px", color: "rgba(255,255,255,0.6)", fontSize: 16, maxWidth: 420, lineHeight: 1.6 }}>
+          You&apos;ve claimed your group ticket for{" "}
+          <strong style={{ color: "#fff" }}>{partyTitle}</strong>. Your QR code will let you enter independently.
+        </p>
+        <p style={{ margin: "0 0 40px", color: "#a855f7", fontSize: 15, fontWeight: 600 }}>
+          Check your email. Your QR ticket is on its way.
+        </p>
+        <Link href="/browse" style={{ color: "rgba(255,255,255,0.3)", fontSize: 14, textDecoration: "none" }}>
+          Browse more events
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", paddingBottom: 80 }}>
+      <div style={{ position: "relative", width: "100%", paddingTop: 100, paddingBottom: 24, overflow: "hidden" }}>
+        {flyerUrl ? (
+          <div style={{ position: "absolute", inset: 0, backgroundImage: `url("${flyerUrl}")`, backgroundSize: "cover", backgroundPosition: "center", filter: "blur(24px) brightness(0.4) saturate(1.4)", transform: "scale(1.1)" }} />
+        ) : (
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, #1a0d2e 0%, #0b0514 100%)" }} />
+        )}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 120, background: "linear-gradient(to bottom, transparent, #0b0514)" }} />
+        {flyerUrl && (
+          <div style={{ position: "relative", zIndex: 2, maxWidth: 440, width: "calc(100% - 48px)", margin: "0 auto", borderRadius: 20, overflow: "hidden", boxShadow: "0 12px 60px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.12), 0 0 90px rgba(139,92,246,0.3)", background: "rgba(11, 5, 20, 0.8)" }}>
+            <Image src={flyerUrl} alt={partyTitle} width={440} height={380} unoptimized style={{ width: "100%", height: "auto", maxHeight: 380, objectFit: "contain", display: "block" }} />
+          </div>
+        )}
+      </div>
+
+      <div style={{ maxWidth: 500, margin: "0 auto", padding: "24px 24px 0" }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <p style={{ margin: "0 0 6px", color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>
+            You&apos;ve been added to a group for
+          </p>
+          <h1 style={{ margin: "0 0 8px", color: "#fff", fontSize: "clamp(22px, 4vw, 30px)", fontWeight: 900, letterSpacing: "-0.4px" }}>
+            {partyTitle}
+          </h1>
+          <p style={{ margin: "0 0 4px", color: "rgba(255,255,255,0.5)", fontSize: 14 }}>
+            {partyDateTba ? "Date TBA" : formattedDate}
+          </p>
+          {partyLocation && (
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.35)", fontSize: 13 }}>{partyLocation}</p>
+          )}
+        </div>
+
+        <div className="glass" style={{ borderRadius: 16, padding: "14px 20px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <p style={{ margin: "0 0 2px", color: "#fff", fontWeight: 700, fontSize: 15 }}>
+              <span className="inline-flex items-center gap-2">
+                <Users size={18} className="text-purple-400" /> {tierName}
+              </span>
+            </p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Group organised by {hostGuestName}</p>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            {isFull ? (
+              <span style={{ color: "#f87171", fontWeight: 700, fontSize: 13 }}>All Tickets Claimed</span>
+            ) : (
+              <>
+                <p style={{ margin: 0, color: "#a855f7", fontWeight: 800, fontSize: 18 }}>{remainingSpots}</p>
+                <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 11 }}>ticket{remainingSpots !== 1 ? "s" : ""} left</p>
+              </>
+            )}
+          </div>
+        </div>
+
+        {isFull ? (
+          <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 16, padding: "24px", textAlign: "center" }}>
+            <p style={{ margin: "0 0 8px", color: "#f87171", fontWeight: 700, fontSize: 16 }}>All group tickets have been claimed</p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.4)", fontSize: 14 }}>
+              All {groupCapacity} group tickets have been claimed. Contact the organiser to see if more are available.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleClaim}>
+            <div className="glass" style={{ borderRadius: 20, padding: 24, marginBottom: 16 }}>
+              <h2 style={{ margin: "0 0 16px", color: "#fff", fontSize: 16, fontWeight: 700 }}>Claim Your Group Ticket</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <label htmlFor="claim-name" style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>Full Name</label>
+                  <input id="claim-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" disabled={submitting}
+                    style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "12px 16px", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }}
+                    onFocus={(e) => (e.target.style.borderColor = "#8B5CF6")}
+                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="claim-email" style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>Email (your QR ticket will be sent here)</label>
+                  <input id="claim-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" disabled={submitting}
+                    style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "12px 16px", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }}
+                    onFocus={(e) => (e.target.style.borderColor = "#8B5CF6")}
+                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
+                <p style={{ margin: 0, color: "#f87171", fontSize: 14 }}>{error}</p>
+              </div>
+            )}
+
+            <button type="submit" disabled={submitting}
+              style={{ width: "100%", background: submitting ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg, #7C3AED, #a855f7)", color: "#fff", border: "none", borderRadius: 100, padding: "17px", fontSize: 16, fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer", boxShadow: submitting ? "none" : "0 0 32px rgba(139,92,246,0.35)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {submitting ? (
+                <>
+                  <div style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                  Claiming your ticket...
+                </>
+              ) : (
+                "Claim My Ticket. It's Free"
+              )}
+            </button>
+
+            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 12 }}>
+              Free to claim · Your personal QR code will be emailed to you
+            </p>
+          </form>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        input::placeholder { color: rgba(255,255,255,0.2); }
+      `}</style>
+    </div>
+  );
+}
