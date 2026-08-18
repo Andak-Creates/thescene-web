@@ -540,6 +540,8 @@ export default async function PartyPage({ params }: PageProps) {
                 color: "rgba(255,255,255,0.6)",
                 lineHeight: 1.7,
                 fontSize: 15,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
               }}
             >
               {party.description}

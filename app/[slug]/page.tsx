@@ -534,6 +534,8 @@ export default async function SlugPartyPage({ params }: PageProps) {
                 color: "rgba(255,255,255,0.6)",
                 lineHeight: 1.7,
                 fontSize: 15,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
               }}
             >
               {party.description}
@@ -731,6 +733,26 @@ export default async function SlugPartyPage({ params }: PageProps) {
                             {tier.tier_type === "table" ? "🪑 Table" : "👥 Group Pass"} {tier.table_capacity ? `(${tier.table_capacity} seats)` : ""}
                           </span>
                         )}
+                        {tier.app_only && (
+                          <span
+                            style={{
+                              background: "rgba(59,130,246,0.12)",
+                              border: "1px solid rgba(59,130,246,0.3)",
+                              borderRadius: 6,
+                              padding: "2px 8px",
+                              color: "#93c5fd",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: 0.5,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            App Only
+                          </span>
+                        )}
                       </div>
                       {soldOut ? (
                         <p
@@ -788,7 +810,7 @@ export default async function SlugPartyPage({ params }: PageProps) {
 
       {/* Sticky CTA */}
       {activeTiers.some(
-        (t: any) => t.quantity - (t.quantity_sold ?? 0) > 0,
+        (t: any) => !t.app_only && t.quantity - (t.quantity_sold ?? 0) > 0,
       ) && (
         <div
           style={{

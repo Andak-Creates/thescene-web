@@ -17,6 +17,7 @@ interface TicketTier {
   max_per_order: number | null;
   tier_type: string | null;
   table_capacity: number | null;
+  app_only: boolean | null;
 }
 
 interface Party {
@@ -98,12 +99,17 @@ export default function CheckoutPage() {
           ...t,
           available: Math.max(0, t.quantity - (t.quantity_sold ?? 0)),
         }));
-        setTiers(activeTiers);
-        if (activeTiers.length > 0) {
-          const firstAvailable = activeTiers.find((t: any) => t.available > 0);
+        // Hide app_only tiers on web checkout
+        const webTiers = activeTiers.filter((t: any) => !t.app_only);
+        setTiers(webTiers);
+        if (webTiers.length > 0) {
+          const firstAvailable = webTiers.find((t: any) => t.available > 0);
           setSelectedTierId(
-            firstAvailable ? firstAvailable.id : activeTiers[0].id,
+            firstAvailable ? firstAvailable.id : webTiers[0].id,
           );
+        } else if (webTiers.length === 0 && activeTiers.length > 0) {
+          // All tiers are app-only — redirect
+          router.replace("/download?reason=app-only");
         }
       }
       setLoading(false);
@@ -238,6 +244,7 @@ export default function CheckoutPage() {
         tier_name: selectedTier?.name,
         quantity,
         guest_name: guestName,
+        source: "web", // signals paystack-webhook to skip — handled by create-guest-ticket
       },
       callback: (res: any) => {
         const ref = res.reference || res.trans || res.transaction || "";
