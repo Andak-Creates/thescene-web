@@ -115,7 +115,7 @@ export default function CheckoutPage() {
       setLoading(false);
     }
     fetchData();
-  }, [targetIdOrSlug]);
+  }, [targetIdOrSlug, router]);
 
   const selectedTier = tiers.find((t) => t.id === selectedTierId) as any;
   const available = selectedTier
