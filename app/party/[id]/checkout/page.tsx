@@ -59,6 +59,7 @@ export default function CheckoutPage() {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [paystackReady, setPaystackReady] = useState(false);
+  const [hostSubaccount, setHostSubaccount] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showBankTransferModal, setShowBankTransferModal] = useState(false);
@@ -69,16 +70,23 @@ export default function CheckoutPage() {
     if (!targetIdOrSlug) return;
     async function fetchData() {
       // Resolve party by UUID or slug
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetIdOrSlug);
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          targetIdOrSlug,
+        );
       const partyQuery = isUuid
         ? supabase
             .from("parties")
-            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, absorb_fee, host_profile:host_profiles!host_profile_id(name)")
+            .select(
+              "id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, absorb_fee, host_profile:host_profiles!host_profile_id(name)",
+            )
             .eq("id", targetIdOrSlug)
             .single()
         : supabase
             .from("parties")
-            .select("id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, absorb_fee, host_profile:host_profiles!host_profile_id(name)")
+            .select(
+              "id, title, date, location, city, currency_code, host_id, show_ticket_count, community_link, community_platform, absorb_fee, host_profile:host_profiles!host_profile_id(name)",
+            )
             .eq("slug", targetIdOrSlug)
             .single();
 
@@ -110,6 +118,27 @@ export default function CheckoutPage() {
         } else if (webTiers.length === 0 && activeTiers.length > 0) {
           // All tiers are app-only — redirect
           router.replace("/download?reason=app-only");
+        }
+
+        // Fetch host's Paystack subaccount code for split payments
+        if (partyData?.id) {
+          try {
+            const { data: subCode, error: rpcErr } = await supabase.rpc(
+              "get_host_subaccount_for_party",
+              { p_party_id: partyData.id },
+            );
+            if (!rpcErr && subCode) {
+              setHostSubaccount(subCode);
+            } else if (partyData.host_id) {
+              const { data: userSubCode } = await supabase.rpc(
+                "get_host_subaccount_for_user",
+                { p_user_id: partyData.host_id },
+              );
+              setHostSubaccount(userSubCode ?? null);
+            }
+          } catch (fetchErr) {
+            console.warn("[Checkout] Host subaccount lookup error:", fetchErr);
+          }
         }
       }
       setLoading(false);
@@ -184,9 +213,10 @@ export default function CheckoutPage() {
         ? `&community_link=${encodeURIComponent(party.community_link)}&community_platform=${encodeURIComponent(party.community_platform || "WhatsApp")}`
         : "";
 
-      const tableQuery = isTable && claimToken
-        ? `&is_table=1&claim_token=${claimToken}&table_name=${encodeURIComponent(selectedTier?.name ?? "")}&table_capacity=${selectedTier?.table_capacity ?? ""}`
-        : "";
+      const tableQuery =
+        isTable && claimToken
+          ? `&is_table=1&claim_token=${claimToken}&table_name=${encodeURIComponent(selectedTier?.name ?? "")}&table_capacity=${selectedTier?.table_capacity ?? ""}`
+          : "";
 
       router.push(
         `/${slug}/checkout/success?ticket=${ticketId}&party=${encodeURIComponent(party.title)}${commQuery}${tableQuery}`,
@@ -237,6 +267,12 @@ export default function CheckoutPage() {
       currency: party!.currency_code,
       ref: `TKW_${Date.now()}_${Math.floor(Math.random() * 9999)}`,
       channels: ["card", "bank_transfer", "ussd", "mobile_money", "bank"],
+      ...(hostSubaccount
+        ? {
+            subaccount: hostSubaccount,
+            bearer: (party as any)?.absorb_fee ? "account" : "subaccount",
+          }
+        : {}),
       metadata: {
         party_id: party!.id,
         party_title: party!.title,
@@ -404,6 +440,7 @@ export default function CheckoutPage() {
       {showBankTransferModal && <BankTransferModal />}
       <Script
         src="https://js.paystack.co/v1/inline.js"
+        strategy="afterInteractive"
         onLoad={() => setPaystackReady(true)}
       />
 
@@ -532,15 +569,19 @@ export default function CheckoutPage() {
               fontWeight: 700,
             }}
           >
-            {tiers.some((t: any) => t.tier_type === "table") && !tiers.some((t: any) => t.tier_type === "ticket")
+            {tiers.some((t: any) => t.tier_type === "table") &&
+            !tiers.some((t: any) => t.tier_type === "ticket")
               ? "Reserve a Table"
               : tiers.some((t: any) => t.tier_type === "table")
-              ? "Select Ticket or Table"
-              : "Select Ticket"}
+                ? "Select Ticket or Table"
+                : "Select Ticket"}
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {tiers.map((tier: any) => {
-              const avail = Math.max(0, tier.quantity - (tier.quantity_sold ?? 0));
+              const avail = Math.max(
+                0,
+                tier.quantity - (tier.quantity_sold ?? 0),
+              );
               const soldOut = avail <= 0;
               const selected = selectedTierId === tier.id;
               return (
@@ -571,7 +612,15 @@ export default function CheckoutPage() {
                   }}
                 >
                   <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2, flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 2,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <p
                         style={{
                           margin: 0,
@@ -582,7 +631,8 @@ export default function CheckoutPage() {
                       >
                         {tier.name}
                       </p>
-                      {(tier.tier_type === "table" || tier.tier_type === "group") && (
+                      {(tier.tier_type === "table" ||
+                        tier.tier_type === "group") && (
                         <span
                           style={{
                             background: "rgba(168,85,247,0.15)",
@@ -596,7 +646,12 @@ export default function CheckoutPage() {
                             letterSpacing: 0.5,
                           }}
                         >
-                          {tier.tier_type === "table" ? "🪑 Table" : "👥 Group Pass"} {tier.table_capacity ? `(${tier.table_capacity} seats)` : ""}
+                          {tier.tier_type === "table"
+                            ? "🪑 Table"
+                            : "👥 Group Pass"}{" "}
+                          {tier.table_capacity
+                            ? `(${tier.table_capacity} seats)`
+                            : ""}
                         </span>
                       )}
                     </div>
@@ -607,7 +662,11 @@ export default function CheckoutPage() {
                         fontSize: 12,
                       }}
                     >
-                      {soldOut ? "Sold out" : party?.show_ticket_count ? `${avail} left` : "Available"}
+                      {soldOut
+                        ? "Sold out"
+                        : party?.show_ticket_count
+                          ? `${avail} left`
+                          : "Available"}
                     </p>
                   </div>
                   <p
@@ -627,130 +686,132 @@ export default function CheckoutPage() {
             })}
           </div>
 
-          {selectedTier && available > 1 && selectedTier.tier_type !== "table" && (
-            <div style={{ marginTop: 20 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginBottom: 10,
-                }}
-              >
-                <label
+          {selectedTier &&
+            available > 1 &&
+            selectedTier.tier_type !== "table" && (
+              <div style={{ marginTop: 20 }}>
+                <div
                   style={{
-                    color: "rgba(255,255,255,0.5)",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.5,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 10,
                   }}
                 >
-                  Quantity
-                </label>
-                {selectedTier.max_per_order && (
-                  <span
+                  <label
                     style={{
-                      color: "#a855f7",
-                      fontSize: 11,
-                      background: "rgba(168,85,247,0.15)",
-                      padding: "2px 8px",
-                      borderRadius: 10,
+                      color: "rgba(255,255,255,0.5)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
                     }}
                   >
-                    Max {selectedTier.max_per_order}
+                    Quantity
+                  </label>
+                  {selectedTier.max_per_order && (
+                    <span
+                      style={{
+                        color: "#a855f7",
+                        fontSize: 11,
+                        background: "rgba(168,85,247,0.15)",
+                        padding: "2px 8px",
+                        borderRadius: 10,
+                      }}
+                    >
+                      Max {selectedTier.max_per_order}
+                    </span>
+                  )}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 14,
+                    padding: "10px 16px",
+                    width: "fit-content",
+                  }}
+                >
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      border: "none",
+                      background:
+                        quantity <= 1
+                          ? "rgba(255,255,255,0.05)"
+                          : "rgba(139,92,246,0.2)",
+                      color: "#fff",
+                      fontSize: 20,
+                      cursor: quantity <= 1 ? "default" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    −
+                  </button>
+                  <span
+                    style={{
+                      color: "#fff",
+                      fontWeight: 800,
+                      fontSize: 22,
+                      minWidth: 32,
+                      textAlign: "center",
+                    }}
+                  >
+                    {quantity}
                   </span>
-                )}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 14,
-                  padding: "10px 16px",
-                  width: "fit-content",
-                }}
-              >
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity <= 1}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    border: "none",
-                    background:
-                      quantity <= 1
-                        ? "rgba(255,255,255,0.05)"
-                        : "rgba(139,92,246,0.2)",
-                    color: "#fff",
-                    fontSize: 20,
-                    cursor: quantity <= 1 ? "default" : "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  −
-                </button>
-                <span
-                  style={{
-                    color: "#fff",
-                    fontWeight: 800,
-                    fontSize: 22,
-                    minWidth: 32,
-                    textAlign: "center",
-                  }}
-                >
-                  {quantity}
-                </span>
-                <button
-                  onClick={() =>
-                    setQuantity((q) =>
-                      Math.min(
-                        available,
-                        selectedTier.max_per_order ?? 999999,
-                        q + 1,
-                      ),
-                    )
-                  }
-                  disabled={
-                    quantity >= available ||
-                    (selectedTier.max_per_order &&
-                      quantity >= selectedTier.max_per_order)
-                  }
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    border: "none",
-                    background:
+                  <button
+                    onClick={() =>
+                      setQuantity((q) =>
+                        Math.min(
+                          available,
+                          selectedTier.max_per_order ?? 999999,
+                          q + 1,
+                        ),
+                      )
+                    }
+                    disabled={
                       quantity >= available ||
                       (selectedTier.max_per_order &&
                         quantity >= selectedTier.max_per_order)
-                        ? "rgba(255,255,255,0.05)"
-                        : "rgba(139,92,246,0.2)",
-                    color: "#fff",
-                    fontSize: 20,
-                    cursor:
-                      quantity >= available ||
-                      (selectedTier.max_per_order &&
-                        quantity >= selectedTier.max_per_order)
-                        ? "default"
-                        : "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  +
-                </button>
+                    }
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      border: "none",
+                      background:
+                        quantity >= available ||
+                        (selectedTier.max_per_order &&
+                          quantity >= selectedTier.max_per_order)
+                          ? "rgba(255,255,255,0.05)"
+                          : "rgba(139,92,246,0.2)",
+                      color: "#fff",
+                      fontSize: 20,
+                      cursor:
+                        quantity >= available ||
+                        (selectedTier.max_per_order &&
+                          quantity >= selectedTier.max_per_order)
+                          ? "default"
+                          : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Price Breakdown */}
@@ -831,7 +892,10 @@ export default function CheckoutPage() {
         <button
           onClick={handlePay}
           disabled={
-            purchasing || (!paystackReady && total > 0) || !selectedTier || available === 0
+            purchasing ||
+            (!paystackReady && total > 0) ||
+            !selectedTier ||
+            available === 0
           }
           style={{
             width: "100%",
