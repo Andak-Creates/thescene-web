@@ -8,6 +8,8 @@ interface ButtonProps {
   className?: string;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
+  target?: string;
+  rel?: string;
 }
 
 const Button = ({ 
@@ -16,7 +18,9 @@ const Button = ({
   variant = 'primary', 
   className = '', 
   onClick,
-  type = 'button'
+  type = 'button',
+  target,
+  rel,
 }: ButtonProps) => {
   const baseStyles = "px-6 py-3 rounded-xl font-medium transition-all duration-300 text-center inline-block";
   
@@ -30,8 +34,21 @@ const Button = ({
   const combinedClassName = `${baseStyles} ${variants[variant]} ${className}`;
 
   if (href) {
+    const isExternal = href.startsWith('http://') || href.startsWith('https://');
+    if (isExternal) {
+      return (
+        <a
+          href={href}
+          target={target || "_blank"}
+          rel={rel || "noopener noreferrer"}
+          className={combinedClassName}
+        >
+          {children}
+        </a>
+      );
+    }
     return (
-      <Link href={href} className={combinedClassName}>
+      <Link href={href} target={target} rel={rel} className={combinedClassName}>
         {children}
       </Link>
     );

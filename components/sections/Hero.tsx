@@ -88,10 +88,7 @@ const Hero = () => {
               </div>
             </a>
           </div>
-          <a
-            href="https://bhind.thesceneapp.online"
-            className="text-sm font-medium pt-2 text-white hover:text-theme-purple transition-colors"
-          >
+          <a href="https://bhind.thesceneapp.online" target="_blank" rel="noopener noreferrer" className="text-sm font-medium pt-2 text-white hover:text-theme-purple transition-colors">
             Hosting an event? Open Host Dashboard &rarr;
           </a>
         </div>

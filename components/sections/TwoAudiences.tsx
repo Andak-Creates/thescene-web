@@ -155,10 +155,7 @@ const TwoAudiences = () => {
               </ul>
 
               {/* CTA */}
-              <Link
-                href={audience.ctaHref}
-                className={`inline-block px-7 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${audience.ctaStyle}`}
-              >
+              <Link href={audience.ctaHref} target={audience.ctaHref.startsWith('http') ? '_blank' : undefined} rel={audience.ctaHref.startsWith('http') ? 'noopener noreferrer' : undefined} className={`inline-block px-7 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${audience.ctaStyle}`}>
                 {audience.cta}
               </Link>
             </div>

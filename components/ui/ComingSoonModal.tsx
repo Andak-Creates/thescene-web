@@ -6,20 +6,18 @@ import { X } from "lucide-react";
 
 export default function ComingSoonModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [featureName, setFeatureName] = useState("Feature");
 
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement)?.closest("a, button") as HTMLElement | null;
       if (!target) return;
       
-      const href = target.getAttribute("href");
-      const isComingSoon = target.getAttribute("data-coming-soon") === "bhind";
-      if (
-        href?.includes("soso.thesceneapp.online") || 
-        href?.includes("bhind.thesceneapp.online") ||
-        isComingSoon
-      ) {
+      const isComingSoon = target.getAttribute("data-coming-soon");
+      // bhind is live at https://bhind.thesceneapp.online — do NOT intercept
+      if (isComingSoon && isComingSoon !== "bhind" && isComingSoon !== "false") {
         e.preventDefault();
+        setFeatureName(isComingSoon);
         setIsOpen(true);
       }
     };
@@ -67,9 +65,9 @@ export default function ComingSoonModal() {
           />
         </div>
 
-        <h3 className="mb-2 text-2xl font-extrabold text-white tracking-tight">bhind is Coming Soon</h3>
+        <h3 className="mb-2 text-2xl font-extrabold text-white tracking-tight">{featureName} is Coming Soon</h3>
         <p className="mb-8 text-gray-400 text-sm leading-relaxed">
-          We&apos;re putting the finishing touches on <strong className="text-white font-semibold">bhind</strong>: your ultimate host command centre for ticketing, guest management, and analytics.
+          We&apos;re putting the finishing touches on this feature. Stay tuned!
         </p>
 
         <button

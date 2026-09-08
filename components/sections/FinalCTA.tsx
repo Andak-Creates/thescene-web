@@ -80,10 +80,7 @@ const FinalCTA = () => {
           className="pt-10 border-t border-white/10"
         >
           <p className="text-theme-muted mb-4">Already hosting an event?</p>
-          <a
-            href="https://bhind.thesceneapp.online"
-            className="inline-flex items-center justify-center font-semibold text-theme-purple hover:text-white transition-colors"
-          >
+          <a href="https://bhind.thesceneapp.online" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-semibold text-theme-purple hover:text-white transition-colors">
             Get started &rarr;
           </a>
         </div>
