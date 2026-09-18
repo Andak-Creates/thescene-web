@@ -40,6 +40,7 @@ function formatDate(dateString: string | null, dateTba: boolean) {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: "Africa/Lagos",
   });
 }
 

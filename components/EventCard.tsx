@@ -61,6 +61,7 @@ function formatDate(dateString: string | null, dateTba: boolean) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "Africa/Lagos",
   });
 }
 

@@ -54,6 +54,7 @@ export default function ClaimTableClient({
         month: "long",
         day: "numeric",
         year: "numeric",
+        timeZone: "Africa/Lagos",
       })
     : null;
 

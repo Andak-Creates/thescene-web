@@ -112,11 +112,13 @@ function formatDateTime(dateString: string | null) {
       month: "long",
       day: "numeric",
       year: "numeric",
+      timeZone: "Africa/Lagos",
     }),
     time: d.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
+      timeZone: "Africa/Lagos",
     }),
   };
 }

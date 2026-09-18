@@ -53,6 +53,7 @@ export default function ClaimGroupClient({
         month: "long",
         day: "numeric",
         year: "numeric",
+        timeZone: "Africa/Lagos",
       })
     : null;
 
